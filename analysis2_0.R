@@ -7,8 +7,7 @@
 
 
 rm(list=ls())
-#setwd("C:/Users/riselin/Documents/polybox/privat/xwing/Turniere_2.0/")
-#setwd("~/polybox/privat/xwing/Turniere_2.0/Nationals2018_2019")
+
 
 library(stringr)
 library(ggplot2)
