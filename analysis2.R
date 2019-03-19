@@ -1,6 +1,7 @@
 # dynamic xwing analysis
 
 rm(list = ls())
+setwd("//pasteur/SysBC-Home/riselin/Documents/polybox/privat/xwing/Turniere_2.0")
 
 library(stringr)
 library(ggplot2)
@@ -520,58 +521,55 @@ faction_plot_cut
 #--------- GOOD: find squads with 1 or more X -------
 unique(d.complete[,"ship"])
 
-plotColPerSquad(d.complete, selectColumn = "ship", cutoff = 21, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_faction", plottitle = "swiss, Ships, Feb-MidMarch 2019, % of faction")
-plotColPerSquad(d.cut, selectColumn = "ship", cutoff = 21, factiondetailsdata = factiondetails_cut, plotlabel = "perc_faction", plottitle = "cut, Ships, Feb-MidMarch 2019, % of faction")
+perSquad_swiss_ships <- plotColPerSquad(d.complete, selectColumn = "ship", cutoff = 21, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_faction", plottitle = "swiss, Ships, Feb-MidMarch 2019, % of faction")
+perSquad_cut_ships <- plotColPerSquad(d.cut, selectColumn = "ship", cutoff = 21, factiondetailsdata = factiondetails_cut, plotlabel = "perc_faction", plottitle = "cut, Ships, Feb-MidMarch 2019, % of faction")
 
-plotColPerSquad(d.complete, selectColumn = "pilot", cutoff = 30, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_faction", plottitle = "swiss, Pilots, Feb-MidMarch 2019, % of faction")
-plotColPerSquad(d.cut, selectColumn = "pilot", cutoff = 30, factiondetailsdata = factiondetails_cut, plotlabel = "perc_faction", plottitle = "cut, Pilots, Feb-MidMarch 2019, % of faction")
+perSquad_swiss_pilots <- plotColPerSquad(d.complete, selectColumn = "pilot", cutoff = 30, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_faction", plottitle = "swiss, Pilots, Feb-MidMarch 2019, % of faction")
+perSquad_cut_pilots <- plotColPerSquad(d.cut, selectColumn = "pilot", cutoff = 30, factiondetailsdata = factiondetails_cut, plotlabel = "perc_faction", plottitle = "cut, Pilots, Feb-MidMarch 2019, % of faction")
 
 #--------- unique vs generic-------
 #Goal: determine the amount of squads with pure generics or pure unique ships.
-table(d.complete$pilottype) 
-#until march 16th 733 generics, 2249 uniques (75.4%)
-#from march 16th: 926 generics, 2417 uniques (72.3%)
+table(d.complete$pilottype)[1]/nrow(d.complete) #27% generics
+table(d.complete$pilottype)[2]/nrow(d.complete) #73% uniques
 
-
-unique_pilots <- getPilottype(d.complete) #18.3.19: 808/879 squads with uniques
+unique_pilots <- getPilottype(d.complete) #18.3.19: 808/879 squads with uniques; only trials: 551/599
 ID_uniqeupilots <- d.complete[unique_pilots,"matchID"]
-length(ID_uniqeupilots)/squad_number #91.9%
+length(ID_uniqeupilots)/squad_number #92% of squads had 1 or more uniques
 
 
 d.generics <- d.complete[!(d.complete[,"matchID"]%in%ID_uniqeupilots),]
 length(unique(d.generics$matchID)) #48 squads used generics only!
-table(d.generics$ship) #18.3.19: 113 y, 27t65, 22 sf, 17 rz2, 9 firesprays, 13 strikers
+sort(table(d.generics$ship), decreasing = T) #18.3.19: 113 y, 27t65, 22 sf, 17 rz2, 9 firesprays, 13 strikers
 
-unique_pilots_imperial <- getPilottype(d.complete, factionF = "galacticempire") #18.3.19: 140/143 97.9%
-unique_pilots_rebel <- getPilottype(d.complete, factionF = "rebelalliance") #18.3.19: 247/290 85.2%
-unique_pilots_scum <- getPilottype(d.complete, factionF = "scumandvillainy") #18.3.19: 111/119 93.3%
-unique_pilots_resistance <- getPilottype(d.complete, factionF = "resistance") #18.3.19: 207/215 96.3%
-unique_pilots_fo <- getPilottype(d.complete, factionF = "firstorder") #18.3.19: 103/112 92%
+unique_pilots_imperial <- getPilottype(d.complete, factionF = "galacticempire") #18.3.19: 140/143 97.9%; 96/99 squads
+unique_pilots_rebel <- getPilottype(d.complete, factionF = "rebelalliance") #18.3.19: 247/290 85.2%; 165/195 
+unique_pilots_scum <- getPilottype(d.complete, factionF = "scumandvillainy") #18.3.19: 111/119 93.3%; 66/70
+unique_pilots_resistance <- getPilottype(d.complete, factionF = "resistance") #18.3.19: 207/215 96.3%; 152/157
+unique_pilots_fo <- getPilottype(d.complete, factionF = "firstorder") #18.3.19: 103/112 92%; 72/78
 
 rm(ls=unique_pilots, unique_pilots_imperial, unique_pilots_rebel, unique_pilots_scum, ID_uniqeupilots, unique_pilots_resistance,unique_pilots_fo)
 
 #--------- GOOD: Analysis of PS -----
-
 table(d.complete$ps)
-table(as.character(d.complete[d.complete[,"faction"]=="rebelalliance","ps"]))#the 1068 rebel ships
-table(as.character(d.complete[d.complete[,"faction"]=="galacticempire","ps"]))#the 1068 rebel ships
-table(as.character(d.complete[d.complete[,"faction"]=="resistance","ps"]))#the 782 resistance ships. 62% (487) are high ps. And 147/390 i5 are Lulo (38%)
+table(as.character(d.complete[d.complete[,"faction"]=="rebelalliance","ps"]))#the 727 rebel ships
+table(as.character(d.complete[d.complete[,"faction"]=="galacticempire","ps"]))#the 478 imperial ships
+table(as.character(d.complete[d.complete[,"faction"]=="resistance","ps"]))#the 577 resistance ships. 62% (361) are high ps. And 114/288 i5 are Lulo (40%)
 
-ggplot(d.complete, aes(ps, fill=faction))+
+hist_ps_swiss <- ggplot(d.complete, aes(ps, fill=faction))+
   geom_histogram(binwidth = 0.5, col = "black")+
   scale_fill_manual(values = c("springgreen3", "darkgreen", "red2", "sienna2", "goldenrod1")) +
-  coord_cartesian(xlim = c(1,7), ylim = c(0,750))+
+  coord_cartesian(xlim = c(1,7), ylim = c(0,650))+
   labs(title="Histogram for Pilot Skill", x="PS", y="count")
-table(as.character(d.complete[d.complete[,"ps"]>4 & d.complete[,"faction"]=="rebelalliance","pilot"]))
-table(as.character(d.complete[d.complete[,"ps"]==6 & d.complete[,"faction"]=="galacticempire","pilot"]))
-table(as.character(d.complete[d.complete[,"ps"]==6 & d.complete[,"faction"]=="scumandvillainy","pilot"]))
-table(as.character(d.complete[d.complete[,"ps"]>4 & d.complete[,"faction"]=="resistance","pilot"]))
-
-ggplot(d.cut, aes(ps, fill=faction))+
+hist_ps_cut <- ggplot(d.cut, aes(ps, fill=faction))+
   geom_histogram(binwidth = 0.5, col = "black")+
   scale_fill_manual(values = c("springgreen3", "darkgreen", "red2", "sienna2", "goldenrod1")) +
   coord_cartesian(xlim = c(1,7), ylim = c(0,150))+
   labs(title="Histogram for Pilot Skill, cut", x="PS", y="count")
+
+table(as.character(d.complete[d.complete[,"ps"]>4 & d.complete[,"faction"]=="rebelalliance","pilot"]))
+table(as.character(d.complete[d.complete[,"ps"]==6 & d.complete[,"faction"]=="galacticempire","pilot"]))
+table(as.character(d.complete[d.complete[,"ps"]==6 & d.complete[,"faction"]=="scumandvillainy","pilot"]))
+table(as.character(d.complete[d.complete[,"ps"]>4 & d.complete[,"faction"]=="resistance","pilot"]))
 
 table(d.complete[d.complete[,"ps"]>4, "points"])
 unique(d.complete[d.complete[,"ps"]>4, "matchID"])
@@ -632,10 +630,16 @@ ggplot(d.highpscombined, aes(x=pilot)) +
 
 #--------- Analysis of HP  ------
 table(d.complete$hp)
-ggplot(d.complete, aes(hp, fill=faction))+
+hist_hp_swiss <- ggplot(d.complete, aes(hp, fill=faction))+
   geom_histogram(binwidth = 0.5, col = "black")+
   scale_fill_manual(values = c("springgreen3", "darkgreen", "red2", "sienna2", "goldenrod1")) +
-  coord_cartesian(xlim = c(3,17), ylim = c(0,700))+
+  coord_cartesian(xlim = c(3,17), ylim = c(0,600))+
+  labs(title="Histogram for Hull+Shield", x="HP", y="count")
+
+hist_hp_cut<- ggplot(d.cut, aes(hp, fill=faction))+
+  geom_histogram(binwidth = 0.5, col = "black")+
+  scale_fill_manual(values = c("springgreen3", "darkgreen", "red2", "sienna2", "goldenrod1")) +
+  coord_cartesian(xlim = c(3,17), ylim = c(0,100))+
   labs(title="Histogram for Hull+Shield", x="HP", y="count")
 
 #--------- A-wing Analysis -----
@@ -665,3 +669,16 @@ sum(table(d.ywing$matchID) == 4) #9
 sum(table(d.ywing$matchID) == 1)
 rm(ls = d.ywing)
 
+
+#Output -----
+
+faction_plot_swiss
+faction_plot_cut
+perSquad_swiss_ships
+perSquad_cut_ships
+perSquad_swiss_pilots
+perSquad_cut_pilots
+hist_ps_swiss
+hist_ps_cut
+hist_hp_swiss
+hist_hp_cut
