@@ -76,6 +76,7 @@ tournamentAssembly <-  function(ffdata, ffrounds=6){ #requires dat_assembly, spl
   fdata <- dat_assembly(fdata) #function!
   fdata
 }
+
 getDetails <- function(fdata, factionF = NULL){
   # input: all cols of data set
   # output: matchID, squadsize, generics, wins, losses, hp, ps
@@ -148,6 +149,7 @@ faction_details <- function(faction_data, ffaction=NULL){
   avg_ps <- mean(details[,"PS"])
   data.frame(ffaction, total_lists, total_lists_percentage, total_ships, total_games, faction_avg, faction_median, faction_mode, faction_win, faction_loss, win_percentage, avg_hp, avg_ps) # , faction_win, faction_loss, win_percentage
 } #requires getDetails
+
 getPilottype <- function(squad_data, factionF=NULL){
   sums <- c()
   i <- 1
@@ -186,6 +188,7 @@ getPilottype <- function(squad_data, factionF=NULL){
   }
   sums
 }#used for unique vs generics
+
 getPerSquad <- function(fdata, category, factionF=NULL, condition){
   #input: data all colums, certain category (=col), condition (?)
   #output: row, matchID
@@ -233,7 +236,7 @@ getPerSquad <- function(fdata, category, factionF=NULL, condition){
   colnames(output) <- c("row", "matchID", "total")
   rownames(output) <- NULL
   output
-} #used on plotShipsPerSquad
+} #used on plotColPerSquad
 plotColPerSquad <- function(fdata, selectColumn=ship, cutoff=21, factiondetailsdata, plotlabel=perc_faction, plottitle=NULL){
   #input: dataframe, cutoff = top "X" ships of the meta, factiondetails = either cut or swiss factiondetails, 
   # plotlabel = which numbers shown on bar, plottitle = title of graph
@@ -480,14 +483,14 @@ squad_number_cut <- length(unique(d.complete[d.complete[,"cut"]!="","matchID"]))
 #ratio cut to total:
 squad_number_cut/squad_number #16%
 
-#--------- factiondetails ------
-factiondetails <- rbind(faction_details(d.complete, ffaction = "galacticempire"),
+#--------- factiondetails swiss ------
+factiondetails_swiss <- rbind(faction_details(d.complete, ffaction = "galacticempire"),
                         faction_details(d.complete, ffaction = "rebelalliance"),
                         faction_details(d.complete, ffaction = "scumandvillainy"),
                         faction_details(d.complete, ffaction = "resistance"),
                         faction_details(d.complete, ffaction = "firstorder"))
 
-faction_plot <- ggplot(factiondetails, aes(x=ffaction, y=total_lists, fill=ffaction)) +
+faction_plot_swiss <- ggplot(factiondetails_swiss, aes(x=ffaction, y=total_lists, fill=ffaction)) +
   geom_bar(stat="identity", position = "dodge", col="black") +
   geom_text(aes(label=total_ships, vjust=1), position=position_dodge(width=0.9)) +
   labs(x="Faction", y="total lists", title="lists analyzed") +
@@ -495,9 +498,9 @@ faction_plot <- ggplot(factiondetails, aes(x=ffaction, y=total_lists, fill=ffact
   coord_cartesian(ylim=c(0,200)) +
   theme(panel.grid.minor=element_blank(),panel.grid.major=element_blank(), axis.text.x = element_text(angle = 45, hjust = 0.6, vjust = 0.7))
 
-faction_plot
+faction_plot_swiss
 
-#--------- cut only ------
+#--------- factiondetails cut ------
 d.cut <- d.complete[d.complete[, "cut"]!="",]
 factiondetails_cut <- rbind(faction_details(d.cut, ffaction = "galacticempire"), 
                             faction_details(d.cut, ffaction = "rebelalliance"),
@@ -514,14 +517,14 @@ faction_plot_cut <- ggplot(factiondetails_cut, aes(x=ffaction, y=total_lists, fi
   theme(panel.grid.minor=element_blank(),panel.grid.major=element_blank(), axis.text.x = element_text(angle = 45, hjust = 0.6, vjust = 0.7))
 
 faction_plot_cut
-#--------- GOOD: squads with 1 or more ships of type X -------
+#--------- GOOD: find squads with 1 or more X -------
 unique(d.complete[,"ship"])
 
-plotColPerSquad(d.complete, selectColumn = "pilot", cutoff = 30, factiondetailsdata = factiondetails, plotlabel = "perc_faction", plottitle = "swiss, Pilots, Feb-MidMarch 2019, % of faction")
-plotColPerSquad(d.complete, selectColumn = "ship", cutoff = 21, factiondetailsdata = factiondetails, plotlabel = "perc_faction", plottitle = "swiss, Ships, Feb-MidMarch 2019, % of faction")
-
-plotColPerSquad(d.cut, selectColumn = "pilot", cutoff = 30, factiondetailsdata = factiondetails_cut, plotlabel = "perc_faction", plottitle = "cut, Pilots, Feb-MidMarch 2019, % of faction")
+plotColPerSquad(d.complete, selectColumn = "ship", cutoff = 21, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_faction", plottitle = "swiss, Ships, Feb-MidMarch 2019, % of faction")
 plotColPerSquad(d.cut, selectColumn = "ship", cutoff = 21, factiondetailsdata = factiondetails_cut, plotlabel = "perc_faction", plottitle = "cut, Ships, Feb-MidMarch 2019, % of faction")
+
+plotColPerSquad(d.complete, selectColumn = "pilot", cutoff = 30, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_faction", plottitle = "swiss, Pilots, Feb-MidMarch 2019, % of faction")
+plotColPerSquad(d.cut, selectColumn = "pilot", cutoff = 30, factiondetailsdata = factiondetails_cut, plotlabel = "perc_faction", plottitle = "cut, Pilots, Feb-MidMarch 2019, % of faction")
 
 #--------- unique vs generic-------
 #Goal: determine the amount of squads with pure generics or pure unique ships.
@@ -647,7 +650,11 @@ length(unique(d.rz2$player))
 fiveawings <- table(d.rz2$matchID) == 5
 fiveawings_ids <- as.integer(names(fiveawings[fiveawings==1]))
 length(unique(d.rz2[d.rz2[,"matchID"]%in%fiveawings_ids, "player"])) #13 players
-
+rm(ls = fiveawings, fiveawings_ids, d.rz2)
+#do with getPerSquad
+cond <- d.complete[,"ship"]=="rz2awing"
+getPerSquad(d.complete, "ship", condition = cond)
+rm(ls = cond)
 #--------- Y-wing Analysis -----
 d.ywing <- d.complete[d.complete[,"ship"]=="btla4ywingREBEL",] #279 ships
 length(unique(d.ywing$player)) #129 players
@@ -656,5 +663,5 @@ length(unique(d.ywing$matchID)) /squad_number #22% of all squads
 sum(table(d.ywing$matchID) == 5) #16 of 132 lists (12%)
 sum(table(d.ywing$matchID) == 4) #9
 sum(table(d.ywing$matchID) == 1)
-
+rm(ls = d.ywing)
 
