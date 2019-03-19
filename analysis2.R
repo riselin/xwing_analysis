@@ -203,19 +203,18 @@ getPerSquad <- function(fdata, category, factionF=NULL, condition){
   for (i in 1:nrow(tempdata)){
     j <- 1
     max_j <- length(tempdata[tempdata[,"matchID"]==tempdata[i,"matchID"],"matchID"]) # store the amount of rows with the same matchID
-    
     while(tempdata[i,"matchID"]==tempdata[i+j,"matchID"]){ #while the next number is the same as the current iteration: keep counting
       j <- j+1
       if(i+j>nrow(tempdata)){
         break
       }
       if (j == max_j){
-        total <- 0
+        total <- 0 #at each new start
       }
-    }
-    if (condition[i]){ #if this iteration fulfilled the condiion
+    }#end while
+    if (condition[i]){ #if this iteration fulfilled the condition
       total <- total + 1
-    }
+    }#end condition-if
     if (!is.null(factionF)){ #go here if a faction was determined
       if (j == 1 && tempdata[i,"faction"]==factionF && total > 0){ 
         # if j reached the maximal value, and if the faction is correct, and if the tier is in cut, and if you remember a non-normal arc
@@ -223,7 +222,7 @@ getPerSquad <- function(fdata, category, factionF=NULL, condition){
         rows <- c(i, tempdata[i,"matchID"], total)
         output <- rbind(output, rows)
       }
-    }
+    }#end faction-if
     else if(is.null(factionF)){
       if (j == 1  & total > 0){
         rows <- c(i, tempdata[i,"matchID"], total)
@@ -273,6 +272,112 @@ plotColPerSquad <- function(fdata, selectColumn=ship, cutoff=21, factiondetailsd
     theme(panel.grid.minor=element_blank(),panel.grid.major=element_blank(), axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))#, hjust = 0.7, vjust = 0.7
   p
 }# squads with 1 or more ships of type x per squad
+
+getPilotrates <- function(datasource, fpilot){
+  wins <- c()
+  losses <- c()
+  i <- 1
+  j <- 1
+  pilot_count <- 0
+  tempID <- 0
+  for (i in 1:nrow(datasource)){
+    j <- 1
+    fdetail <- 0
+    max_j <- length(datasource[datasource[,"matchID"]==datasource[i,"matchID"],"matchID"]) # store the amount of rows with the same matchID
+    while(datasource[i,"matchID"]==datasource[i+j,"matchID"]){ #while the next number is the same as the current iteration: keep counting
+      j <- j+1
+      if(i+j>nrow(datasource)){
+        break
+      }
+      if (j == max_j){
+        pilot_count <- 0
+      }
+    } #end while
+    
+    if (datasource[i,"pilot"]==fpilot & tempID != datasource[i, "matchID"]){ #if this iteration had the correct pilot: remember that!
+      tempID <- datasource[i,"matchID"]
+      pilot_count <- pilot_count + 1
+      fdetail <- 1
+      wins <- c(wins,datasource[i,"wins"])
+      losses <- c(losses,datasource[i,"losses"])
+    }
+    if(i+j>nrow(datasource)){ #can't go higher than total number of rows
+      break
+    }
+  }
+  out <- cbind(wins=sum(wins), losses=sum(losses))
+  out
+}
+getPilotdetails <- function(fdata, fthreshold=10){
+  fpilot <- unique(as.character(fdata[,"pilot"])) # make list with all pilot names
+  output <- data.frame()
+  for (k in 1:length(fpilot)){ # iterate through list with pilot names
+    if (length(unique(fdata[fdata[,"pilot"]==fpilot[k],"matchID"]))<fthreshold){ #col 5 is matchID - count how many squads used pilot k
+      next
+    }
+    pilot <- fpilot[k] #add pilot name
+    faction <- d.database[d.database[,"pilot"]==fpilot[k], "faction"]
+    rates <- getPilotrates(datasource = fdata, fpilot = pilot) #add wins and losses
+    result <- cbind(pilot, faction, rates) #bind together in same row
+    output <- rbind(output, result) #bind together by row
+  } #end for
+  output
+}
+
+getArchetype <- function(fdata, category, factionF=NULL, condition){
+  #input: data all colums, certain category (=col), condition (?)
+  #output: row, matchID
+  tempdata <- data.frame()
+  tempdata <- data.frame(matchID = rep(c(""), times = nrow(fdata)))
+  tempdata[, "matchID"]<- fdata[, "matchID"]
+  tempdata[, category] <- fdata[, category]
+  total <- c()
+  tempship <- c()
+  i <- 1
+  output <- c()
+  for (i in 1:nrow(tempdata)){
+    j <- 1
+    max_j <- length(tempdata[tempdata[,"matchID"]==tempdata[i,"matchID"],"matchID"]) # store the amount of rows with the same matchID
+    while(tempdata[i,"matchID"]==tempdata[i+j,"matchID"]){ #while the next number is the same as the current iteration: keep counting
+      j <- j+1
+      if(i+j>nrow(tempdata)){
+        break
+      }
+      if (j == max_j){
+        total <- 0 #at each new start
+      }
+    }#end while
+    if (condition[i]){ #if this iteration fulfilled the condition
+      total <- total + 1
+    }#end condition-if
+    
+    if (!is.null(factionF)){ #go here if a faction was determined
+      if (j == 1 && tempdata[i,"faction"]==factionF && total > 0){ 
+        # if j reached the maximal value, and if the faction is correct, and if the tier is in cut, and if you remember a non-normal arc
+        # so only once per squad!
+        tempship <- paste(tempdata[tempdata[,"matchID"]==tempdata[i,"matchID"],"ship"], collapse = " ")
+        rows <- c(i, tempdata[i,"matchID"], total, tempship)
+        output <- rbind(output, rows)
+        tempship <- c()
+      }
+    }#end faction-if
+    else if(is.null(factionF)){
+      if (j == 1  & total > 0){
+        tempship <- paste(tempdata[tempdata[,"matchID"]==tempdata[i,"matchID"],"ship"], collapse = " ")
+        rows <- c(i, tempdata[i,"matchID"], total, tempship)
+        output <- rbind(output, rows)
+        tempship <- c()
+      }
+    } #end else
+    if(i+j>nrow(tempdata)){
+      break
+    }
+  }#end for
+  colnames(output) <- c("row", "matchID", "total", "archetype")
+  rownames(output) <- NULL
+  output
+} #used on plotColPerSquad
+
 #--------- DATABASE to identify generics, health, PS, arcs-----
 d.database <- read.csv("./database2.csv", header = T, sep = ";")
 d.database[,1] <- as.character(d.database[,1]) #faction
@@ -518,7 +623,7 @@ faction_plot_cut <- ggplot(factiondetails_cut, aes(x=ffaction, y=total_lists, fi
   theme(panel.grid.minor=element_blank(),panel.grid.major=element_blank(), axis.text.x = element_text(angle = 45, hjust = 0.6, vjust = 0.7))
 
 faction_plot_cut
-#--------- GOOD: find squads with 1 or more X -------
+#--------- find squads with 1 or more X -------
 unique(d.complete[,"ship"])
 
 perSquad_swiss_ships <- plotColPerSquad(d.complete, selectColumn = "ship", cutoff = 21, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_faction", plottitle = "swiss, Ships, Feb-MidMarch 2019, % of faction")
@@ -549,7 +654,63 @@ unique_pilots_fo <- getPilottype(d.complete, factionF = "firstorder") #18.3.19: 
 
 rm(ls=unique_pilots, unique_pilots_imperial, unique_pilots_rebel, unique_pilots_scum, ID_uniqeupilots, unique_pilots_resistance,unique_pilots_fo)
 
-#--------- GOOD: Analysis of PS -----
+#--------- Archetype Analysis------
+#!!! STILL FAULTY, the last entry is not included with getArchetype!
+#Idea: group lists by their ship type
+d.temp <- d.cut[,c(1:11,44)]
+d.temp <- d.temp[order(d.temp$pilot),]
+d.temp <- d.temp[order(d.temp$ship),]
+d.temp <- d.temp[order(d.temp$matchID),]
+
+d.archetype <- d.temp[,c("ship", "matchID")]
+tempcond <- d.archetype[,"ship"]!=""
+d.archetype <- getArchetype(d.archetype, "ship", factionF = NULL, condition = tempcond)
+overview_archetype <- as.data.frame(table(d.archetype[,"archetype"]))
+#stitch it back together: number 1 and name 1, and so on
+conc_archetype <- data.frame()
+for (i in 1:nrow(overview_archetype)){
+  pastename <- c()
+  for (j in 1:length(table(str_split(names(table(d.archetype[,"archetype"])[i]), pattern=" ")))){
+    tempname <- paste(table(str_split(names(table(d.archetype[,"archetype"])[i]), pattern=" "))[[j]],
+                      names(table(str_split(names(table(d.archetype[,"archetype"])[i]), pattern=" ")))[[j]], sep="x")
+    pastename <- paste(pastename, tempname, sep=" ")
+  }
+  conc_archetype[i,"archetype"] <- c(pastename)
+}
+overview_archetype[,1] <- conc_archetype
+sum(overview_archetype[,2])
+overview_archetype <- overview_archetype[order(overview_archetype$Freq, decreasing = T),]
+
+
+colnames(overview_archetype) <- c("archetype", "freq")
+rownames(overview_archetype) <- NULL
+sum(head(overview_archetype, 21)[2])
+head(overview_archetype, 21)
+
+rm(ls = d.temp, tempcond, i, j, conc_archetype, d.archetype, tempname, pastename)
+
+
+#--------- Win/Loss analysis-----
+
+winpilots_swiss <- getPilotdetails(d.complete, fthreshold = 5)
+winpilots_swiss[,"percentage"] <- round(100*as.numeric(as.character(winpilots_swiss[,"wins"]))/(as.numeric(as.character(winpilots_swiss[,"wins"]))+as.numeric(as.character(winpilots_swiss[,"losses"]))), digits=2)
+winpilots_swiss[,"total_games"] <- as.numeric(as.character(winpilots_swiss[,"wins"]))+as.numeric(as.character(winpilots_swiss[,"losses"]))
+winrates_swiss <- ggplot(winpilots_swiss, aes(x=total_games, y=percentage, fill=faction)) +
+  geom_point() +
+  coord_flip() +
+  scale_fill_manual(values = factioncolors)+
+  geom_text(aes(label=pilot,hjust=0.5, vjust=-0.5), size = 4.5)
+
+winpilots_cut <- getPilotdetails(d.cut, fthreshold = 5)
+winpilots_cut[,"percentage"] <- round(100*as.numeric(as.character(winpilots_cut[,"wins"]))/(as.numeric(as.character(winpilots_cut[,"wins"]))+as.numeric(as.character(winpilots_cut[,"losses"]))), digits=2)
+winpilots_cut[,"total_games"] <- as.numeric(as.character(winpilots_cut[,"wins"]))+as.numeric(as.character(winpilots_cut[,"losses"]))
+winrates_cut <- ggplot(winpilots_cut, aes(x=total_games, y=percentage)) +
+  geom_point() +
+  coord_flip() +
+  geom_text(aes(label=pilot,hjust=0.5, vjust=-0.5), size = 4.5)
+
+
+#--------- Analysis of PS -----
 table(d.complete$ps)
 table(as.character(d.complete[d.complete[,"faction"]=="rebelalliance","ps"]))#the 727 rebel ships
 table(as.character(d.complete[d.complete[,"faction"]=="galacticempire","ps"]))#the 478 imperial ships
@@ -670,6 +831,7 @@ sum(table(d.ywing$matchID) == 1)
 rm(ls = d.ywing)
 
 
+
 #Output -----
 
 faction_plot_swiss
@@ -682,3 +844,5 @@ hist_ps_swiss
 hist_ps_cut
 hist_hp_swiss
 hist_hp_cut
+winrates_swiss
+winrates_cut
