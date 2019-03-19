@@ -234,41 +234,6 @@ getPerSquad <- function(fdata, category, factionF=NULL, condition){
   rownames(output) <- NULL
   output
 } #used on plotShipsPerSquad
-plotShipsPerSquad <- function(fdata, cutoff=21, factiondetailsdata, plotlabel=perc_faction, plottitle=NULL){
-  #input: dataframe, cutoff = top "X" ships of the meta, factiondetails = either cut or swiss factiondetails, 
-  # plotlabel = which numbers shown on bar, plottitle = title of graph
-  #output: barplot, sorted by faction showing how many squads had at least one ship of type X plus percentage
-  topXships <- head(as.data.frame(sort(table(fdata$ship), decreasing = T)),cutoff) #get "cutoff" most frequent ships
-  topXships[,1] <- as.character(topXships[,1]) #use as labels for x-axis
-  for(i in 1:nrow(topXships)){
-    cond <- fdata[,"ship"]==topXships[i,1] #true or false
-    squads <- nrow(getPerSquad(fdata, "ship", condition = cond)) #if true: this ship will be counted
-    topXships[i,"squads"] <- squads
-    topXships[i,"perc"] <- round((100*squads)/sum(factiondetailsdata[,2]),1)
-  }
-  for (i in 1:nrow(topXships)){ #assign faction, calculate percentage of faction
-    for (j in 1:nrow(d.database)){
-      if (topXships[i,"Var1"] == d.database[j,"ship"]){
-        topXships[i,"faction"] <- d.database[j,"faction"]
-        topXships[i, "perc_faction"] <- round((100*topXships[i,"squads"])/(factiondetailsdata[factiondetailsdata[,"ffaction"]==topXships[i,"faction"],2]),1) 
-        break
-      }
-    }
-  }
-  topXships <- topXships[order(topXships$perc, decreasing = T),]
-  topXships <- topXships[order(topXships$faction),]
-  name_order <- as.character(topXships$Var1)
-  topXships[,1] <- ordered(name_order, levels = name_order)
-  rownames(topXships) <- NULL
-  topXships <- topXships[,c(1,5,2,3,4,6)]
-  p <- ggplot(topXships, aes(x=Var1, y=squads, fill = faction))+
-    geom_bar(stat="identity", position = "dodge", col="black") +
-    geom_text(aes(label=topXships[,plotlabel], vjust=1.2), position=position_dodge(width=0.9)) +
-    labs(x="Ship", y="squads with at least one [#]", title=plottitle) +
-    scale_fill_manual(values = c("springgreen3", "darkgreen", "red2", "sienna2", "goldenrod1"))+
-    theme(panel.grid.minor=element_blank(),panel.grid.major=element_blank(), axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))#, hjust = 0.7, vjust = 0.7
-  p
-}# squads with 1 or more ships of type x per squad
 plotColPerSquad <- function(fdata, selectColumn=ship, cutoff=21, factiondetailsdata, plotlabel=perc_faction, plottitle=NULL){
   #input: dataframe, cutoff = top "X" ships of the meta, factiondetails = either cut or swiss factiondetails, 
   # plotlabel = which numbers shown on bar, plottitle = title of graph
@@ -551,9 +516,6 @@ faction_plot_cut <- ggplot(factiondetails_cut, aes(x=ffaction, y=total_lists, fi
 faction_plot_cut
 #--------- GOOD: squads with 1 or more ships of type X -------
 unique(d.complete[,"ship"])
-
-plotShipsPerSquad(d.complete, factiondetailsdata = factiondetails, plotlabel = "perc_faction", plottitle = "swiss, February - midMarch 2019, % of faction")
-plotShipsPerSquad(d.cut, factiondetailsdata = factiondetails_cut, plotlabel = "perc_faction", plottitle = "cut, February - midMarch 2019, % of faction")
 
 plotColPerSquad(d.complete, selectColumn = "pilot", cutoff = 30, factiondetailsdata = factiondetails, plotlabel = "perc_faction", plottitle = "swiss, Pilots, Feb-MidMarch 2019, % of faction")
 plotColPerSquad(d.complete, selectColumn = "ship", cutoff = 21, factiondetailsdata = factiondetails, plotlabel = "perc_faction", plottitle = "swiss, Ships, Feb-MidMarch 2019, % of faction")
