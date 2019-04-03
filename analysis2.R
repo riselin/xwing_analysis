@@ -361,6 +361,12 @@ lists_possible <- c(lists_possible, nrow(d.arizona))
 d.arizona <- tournamentAssembly(d.arizona, ffrounds = 6)
 lists_entered <- c(lists_entered, max(d.arizona$listID))
 
+#adepticon
+d.wide <- read.csv("./wave3/parsed/parsed-20190329AdepticonSOSextended.csv", header = T, sep = ",")
+lists_possible <- c(lists_possible, nrow(d.wide))
+d.wide <- tournamentAssembly(d.wide, ffrounds = 6)
+lists_entered <- c(lists_entered, max(d.wide$listID))
+
 #--------- d.wide composition -----
 d.wide <- rbind(d.toronto, d.blacksun, d.redmond, d.fantasy, d.ohio, d.bromley, d.malmo,
                             d.bathurst, d.elementMar, d.kentucky, d.minnesota, d.arizona)
