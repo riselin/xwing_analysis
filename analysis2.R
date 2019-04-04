@@ -237,7 +237,7 @@ getPerSquad <- function(fdata, category, factionF=NULL, condition){
   rownames(output) <- NULL
   output
 } #used on plotColPerSquad
-plotColPerSquad <- function(fdata, selectColumn=ship, cutoff=21, factiondetailsdata, plotlabel=perc_faction, plottitle=NULL){
+plotColPerSquad <- function(fdata, selectColumn="ship", cutoff=21, factiondetailsdata, plotlabel=perc_faction, plottitle=NULL){
   #input: dataframe, cutoff = top "X" ships of the meta, factiondetails = either cut or swiss factiondetails, 
   # plotlabel = which numbers shown on bar, plottitle = title of graph
   #output: barplot, sorted by faction showing how many squads had at least one selectColumn of type X plus percentage
@@ -254,6 +254,41 @@ plotColPerSquad <- function(fdata, selectColumn=ship, cutoff=21, factiondetailsd
       if (topXcond[i,"Var1"] == d.database[j,selectColumn]){
         topXcond[i,"faction"] <- d.database[j,"faction"]
         topXcond[i, "perc_faction"] <- round((100*topXcond[i,"squads"])/(factiondetailsdata[factiondetailsdata[,"ffaction"]==topXcond[i,"faction"],2]),1) 
+        break
+      }
+    }
+  }
+  topXcond <- topXcond[order(topXcond$perc, decreasing = T),]
+  topXcond <- topXcond[order(topXcond$faction),]
+  name_order <- as.character(topXcond$Var1)
+  topXcond[,1] <- ordered(name_order, levels = name_order)
+  rownames(topXcond) <- NULL
+  topXcond <- topXcond[,c(1,5,2,3,4,6)]
+  p <- ggplot(topXcond, aes(x=Var1, y=squads, fill = faction))+
+    geom_bar(stat="identity", position = "dodge", col="black") +
+    geom_text(aes(label=topXcond[,plotlabel], vjust=1.2), position=position_dodge(width=0.9)) +
+    labs(x=selectColumn, y="squads with at least one [#]", title=plottitle) +
+    scale_fill_manual(values = c("springgreen3", "darkgreen", "red2", "sienna2", "goldenrod1"))+
+    theme(panel.grid.minor=element_blank(),panel.grid.major=element_blank(), axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))#, hjust = 0.7, vjust = 0.7
+  p
+}# squads with 1 or more ships of type x per squad
+plotColPerSquadField <- function(fdata, selectColumn="ship", cutoff=46, factiondetailsdata, plotlabel=perc_field, plottitle=NULL, denominator = squad_number){
+  #input: dataframe, cutoff = top "X" ships of the meta, factiondetails = either cut or swiss factiondetails, 
+  # plotlabel = which numbers shown on bar, plottitle = title of graph
+  #output: barplot, sorted by faction showing how many squads had at least one selectColumn of type X plus percentage
+  topXcond <- head(as.data.frame(sort(table(fdata[,selectColumn]), decreasing = T)),cutoff) #get "cutoff" most frequent ships
+  topXcond[,1] <- as.character(topXcond[,1]) #use as labels for x-axis
+  for(i in 1:nrow(topXcond)){
+    cond <- fdata[,selectColumn]==topXcond[i,1] #true or false
+    squads <- nrow(getPerSquad(fdata, selectColumn, condition = cond)) #if true: this selectColumn will be counted
+    topXcond[i,"squads"] <- squads
+    topXcond[i,"perc"] <- round((100*squads)/sum(factiondetailsdata[,2]),1)
+  }
+  for (i in 1:nrow(topXcond)){ #assign faction, calculate percentage of faction
+    for (j in 1:nrow(d.database)){
+      if (topXcond[i,"Var1"] == d.database[j,selectColumn]){
+        topXcond[i,"faction"] <- d.database[j,"faction"]
+        topXcond[i, "perc_field"] <- round((100*topXcond[i,"squads"])/denominator,1) 
         break
       }
     }
@@ -379,7 +414,7 @@ getArchetype <- function(fdata, category, factionF=NULL, condition){
 } #used on plotColPerSquad
 
 #--------- DATABASE to identify generics, health, PS, arcs-----
-d.database <- read.csv("./database2.csv", header = T, sep = ";")
+d.database <- read.csv("./database2.csv", header = T, sep = ",")
 d.database[,1] <- as.character(d.database[,1]) #faction
 d.database[,2] <- as.character(d.database[,2]) #ship
 d.database[,3] <- as.character(d.database[,3]) #pilot
@@ -508,8 +543,8 @@ d.wide[d.wide[,"faction"]=="rebelalliance"&d.wide[,"ship"]=="tiefighter","ship"]
 d.wide[d.wide[,"ship"]=="upsilonclassshuttle","ship"] <- "upsilonclasscommandshuttle"
 
 
-# d.wide[d.wide[,"faction"]=="rebelalliance"&d.wide[,"ship"]=="arc170starfighter","ship"] <- "arc170starfighterREBEL"
-# d.wide[d.wide[,"faction"]=="galacticrepublic"&d.wide[,"ship"]=="arc170starfighter","ship"] <- "arc170starfighterREPUBLIC"
+d.wide[d.wide[,"faction"]=="rebelalliance"&d.wide[,"ship"]=="arc170starfighter","ship"] <- "arc170starfighterREBEL"
+d.wide[d.wide[,"faction"]=="galacticrepublic"&d.wide[,"ship"]=="arc170starfighter","ship"] <- "arc170starfighterREPUBLIC"
 # 
 # 
 # 
@@ -650,6 +685,11 @@ perSquad_cut_ships <- plotColPerSquad(d.cut, selectColumn = "ship", cutoff = 21,
 perSquad_swiss_pilots <- plotColPerSquad(d.complete, selectColumn = "pilot", cutoff = 30, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_faction", plottitle = "swiss, Pilots, Feb-MidMarch 2019, % of faction")
 perSquad_cut_pilots <- plotColPerSquad(d.cut, selectColumn = "pilot", cutoff = 30, factiondetailsdata = factiondetails_cut, plotlabel = "perc_faction", plottitle = "cut, Pilots, Feb-MidMarch 2019, % of faction")
 
+perSquad_swiss_ships <- plotColPerSquadField(d.complete, selectColumn = "ship", cutoff = 40, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_field", plottitle = "swiss, Ships, Adepticon, % of field", denominator = squad_number)
+perSquad_cut_ships <- plotColPerSquadField(d.cut, selectColumn = "ship", cutoff = 40, factiondetailsdata = factiondetails_cut, plotlabel = "perc_field", plottitle = "cut, Ships, Adepticon, % of field", denominator = squad_number_cut)
+perSquad_swiss_ships
+perSquad_cut_ships
+
 #--------- unique vs generic-------
 #Goal: determine the amount of squads with pure generics or pure unique ships.
 table(d.complete$pilottype)[1]/nrow(d.complete) #27% generics
@@ -713,7 +753,6 @@ archetypeCut <- getArchetypeList(d.cut)
 archetypeSwiss
 archetypeCut
 
-?merge
 mergeArchetype <- merge(archetypeSwiss, archetypeCut, by = "archetype")
 mergeArchetype[,4] <- round(mergeArchetype[,3]/mergeArchetype[,2], digits = 2)
 mergeArchetype <- mergeArchetype[order(mergeArchetype$freq.y, decreasing = T),]
