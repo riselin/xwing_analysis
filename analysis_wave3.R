@@ -595,7 +595,7 @@ lists_entered <- c(lists_entered, max(d.paris$listID))
 #--------- d.wide composition -----
 d.wave2 <- rbind(d.blacksun, d.redmond, d.fantasy, d.ohio, d.bromley, d.malmo,
                             d.bathurst, d.elementMar, d.kentucky, d.minnesota, d.arizona, d.quebec, d.austin)
-d.wave3 <-  rbind(d.krakow, d.santaclara, d.wyoming, d.gamescube, d.lima, d.nuernberg, d.texas, d.alaska, d.flint, d.maryland, d.paris)
+d.wave3 <-  rbind(d.krakow, d.santaclara, d.wyoming, d.lima, d.nuernberg, d.texas, d.alaska, d.flint,d.maryland, d.paris)#, d.gamescube
 
 d.wide <- d.wave3
 #--------- change same pilot names and ship names to rebelalliance"..." and scumandvillainy"..."-----
