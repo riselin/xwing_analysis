@@ -601,10 +601,10 @@ lists_entered <- c(lists_entered, max(d.paris$listID))
 #--------- d.wide composition -----
 d.wave2 <- rbind(d.blacksun, d.redmond, d.fantasy, d.ohio, d.bromley, d.malmo,
                             d.bathurst, d.elementMar, d.kentucky, d.minnesota, d.arizona, d.quebec, d.austin)
-d.wave3 <-  rbind(d.krakow, d.santaclara, d.wyoming, d.gamescube, d.lima, d.nuernberg, d.texas, d.alaska, d.flint, 
-                  d.milwaukee, d.maryland, d.paris)#12 trials, 116 in cut
+d.wave3 <-  rbind(d.krakow, d.santaclara, d.wyoming, d.gamescube, d.lima, d.nuernberg, d.alaska, d.flint, 
+                  d.milwaukee, d.maryland, d.paris)#12 trials, 116 in cut, d.texas
 
-d.wide <- d.wave3
+d.wide <- rbind(d.wave2, d.wave3)
 #--------- change same pilot names and ship names to rebelalliance"..." and scumandvillainy"..."-----
 
 d.wide[,"ship"] <- as.character(d.wide[,"ship"])
@@ -1067,13 +1067,18 @@ sum(table(d.rz2$matchID) == 5) #14 of 125 had 5 Awings (11%)
 sum(table(d.rz2$matchID) == 1)
 length(unique(d.rz2$player))
 
+a_ids <- unique(d.rz2$matchID)
+d.rz2[, "wins"]
+
+
 fiveawings <- table(d.rz2$matchID) == 5
 fiveawings_ids <- as.integer(names(fiveawings[fiveawings==1]))
+d.5rz2 <- d.complete[d.complete[,"matchID"]%in%fiveawings_ids,]
 length(unique(d.rz2[d.rz2[,"matchID"]%in%fiveawings_ids, "player"])) #13 players
 rm(ls = fiveawings, fiveawings_ids, d.rz2)
 #do with getPerSquad
 cond <- d.complete[,"ship"]=="rz2awing"
-getPerSquad(d.complete, "ship", condition = cond)
+table(getPerSquad(d.complete, "wins", condition = cond)[,3])
 rm(ls = cond)
 #--------- Y-wing Analysis -----
 d.ywing <- d.complete[d.complete[,"ship"]=="btla4ywingREBEL",] #279 ships
