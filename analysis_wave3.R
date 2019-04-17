@@ -272,6 +272,7 @@ plotColPerSquad <- function(fdata, selectColumn="ship", cutoff=21, factiondetail
     scale_fill_manual(values = c("springgreen3", "darkgreen", "dodgerblue4", "red2", "sienna2", "goldenrod1", "purple3"))+
     theme(panel.grid.minor=element_blank(),panel.grid.major=element_blank(), axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))#, hjust = 0.7, vjust = 0.7
   p
+  #topXcond
 }# squads with 1 or more ships of type x per squad
 plotColPerSquadField <- function(fdata, selectColumn="ship", cutoff=46, factiondetailsdata, plotlabel=perc_field, plottitle=NULL, denominator = squad_number){
   #input: dataframe, cutoff = top "X" ships of the meta, factiondetails = either cut or swiss factiondetails, 
@@ -351,10 +352,11 @@ getPilotdetails <- function(fdata, fthreshold=10){
     if (length(unique(fdata[fdata[,"pilot"]==fpilot[k],"matchID"]))<fthreshold){ #col 5 is matchID - count how many squads used pilot k
       next
     }
+    squads <- as.numeric(as.character(length(unique(fdata[fdata[,"pilot"]==fpilot[k],"matchID"]))))
     pilot <- fpilot[k] #add pilot name
     faction <- d.database[d.database[,"pilot"]==fpilot[k], "faction"]
     rates <- getPilotrates(datasource = fdata, fpilot = pilot) #add wins and losses
-    result <- cbind(pilot, faction, rates) #bind together in same row
+    result <- cbind(pilot, faction, rates, squads) #bind together in same row
     output <- rbind(output, result) #bind together by row
   } #end for
   output
@@ -592,19 +594,37 @@ lists_possible <- c(lists_possible, nrow(d.maryland))
 d.maryland <- tournamentAssembly(d.maryland, ffrounds = 6)
 lists_entered <- c(lists_entered, max(d.maryland$listID))
 
-#Paris Hyperspace Trial US, 6.4.19, top8
+#Paris Hyperspace Trial FR, 6.4.19, top8
 d.paris <- read.csv("./wave3/parsed/parsed-20190406ParisHyperspaceTrialFR.csv", header = T, sep = ",")
 lists_possible <- c(lists_possible, nrow(d.paris))
 d.paris <- tournamentAssembly(d.paris, ffrounds = 5)
 lists_entered <- c(lists_entered, max(d.paris$listID))
 
+#California Hyperspace Trial US, 13.4.19, top8
+d.california <- read.csv("./wave3/parsed/parsed-20190413California5rHyperspaceTrialUS.csv", header = T, sep = ",")
+lists_possible <- c(lists_possible, nrow(d.california))
+d.california <- tournamentAssembly(d.california, ffrounds = 5)
+lists_entered <- c(lists_entered, max(d.california$listID))
+
+#Florida Hyperspace Trial US, 13.4.19, top8
+d.florida <- read.csv("./wave3/parsed/parsed-20190413FloridaHyperspaceTrialUS.csv", header = T, sep = ",")
+lists_possible <- c(lists_possible, nrow(d.florida))
+d.florida <- tournamentAssembly(d.florida, ffrounds = 6)
+lists_entered <- c(lists_entered, max(d.florida$listID))
+
+#Minnesota Hyperspace Trial US, 13.4.19, top8
+d.minnesota <- read.csv("./wave3/parsed/parsed-20190413MinnesotaHyperspaceTrialUS.csv", header = T, sep = ",")
+lists_possible <- c(lists_possible, nrow(d.minnesota))
+d.minnesota <- tournamentAssembly(d.minnesota, ffrounds = 6)
+lists_entered <- c(lists_entered, max(d.minnesota$listID))
+
 #--------- d.wide composition -----
 d.wave2 <- rbind(d.blacksun, d.redmond, d.fantasy, d.ohio, d.bromley, d.malmo,
                             d.bathurst, d.elementMar, d.kentucky, d.minnesota, d.arizona, d.quebec, d.austin)
 d.wave3 <-  rbind(d.krakow, d.santaclara, d.wyoming, d.gamescube, d.lima, d.nuernberg, d.texas, d.alaska, d.flint, 
-                  d.milwaukee, d.maryland, d.paris)#12 trials, 116 in cut
+                  d.milwaukee, d.maryland, d.paris, d.california, d.florida, d.minnesota)#15 trials, 140 in cut
 
-d.wide <- d.wave3
+d.wide <- rbind(d.wave2)#, d.wave2)
 #--------- change same pilot names and ship names to rebelalliance"..." and scumandvillainy"..."-----
 
 d.wide[,"ship"] <- as.character(d.wide[,"ship"])
@@ -705,9 +725,9 @@ for (i in 1:length(unique(d.wide[,"uniqueID"]))){
 
 #--------- DATA PREP COMPLETE -----
 rm(ls = d.blacksun, d.redmond, d.fantasy, d.ohio, d.bromley, d.malmo,
-   d.bathurst, d.elementMar, d.kentucky, d.minnesota, d.arizona, d.quebec, d.austin, d.wave2)
+   d.bathurst, d.elementMar, d.kentucky, d.minnesota, d.arizona, d.quebec, d.austin, d.wave2, d.adepticon)
 rm(ls = d.wave3, d.krakow, d.santaclara, d.wyoming, d.gamescube, d.lima, d.nuernberg, d.texas, 
-   d.alaska, d.flint, d.milwaukee, d.maryland, d.paris)
+   d.alaska, d.flint, d.milwaukee, d.maryland, d.paris, d.california, d.florida, d.minnesota)
 d.complete <- d.wide[,1:44]
 colnames(d.complete) <- c("player","faction","wins","losses","swiss", "cut", "date","listID", "points","pilot","ship", #11
                           "talent1", "talent2", "force1", "sensor1", "tech1", "tech2", "cannon1", "turret1", "torpedo1", "torpedo2", "missile1", "missile2", #12
@@ -722,12 +742,13 @@ d.complete[,"listID"] <- as.integer(d.complete[,"listID"])
 d.complete[,"matchID"] <- as.integer(d.complete[,"matchID"])
 row.names(d.complete) <- NULL
 
+#--------- basic numbers
 
-
-squad_number <- length(unique(d.complete$matchID))#624 lists wave2-2, 327 lists wave 3 (8.4.)
-squad_number_cut <- length(unique(d.complete[d.complete[,"cut"]!="","matchID"])) #110 in the cut wave 2-2, 60 lists wave 3 (8.4.)
+squad_number <- length(unique(d.complete$matchID))#624 lists wave2-2, 655 lists wave 3 (16.4.)
+squad_number_cut <- length(unique(d.complete[d.complete[,"cut"]!="","matchID"])) #110 in the cut wave 2-2, 140 lists wave 3 (16.4.)
 #ratio cut to total:
-squad_number_cut/squad_number #wave 3: 21.9%%
+squad_number_cut/squad_number #wave 3: 21.4%
+conversion_rate <- round(100*squad_number_cut/squad_number, digits=1)
 
 #--------- factiondetails swiss ------
 factiondetails_swiss <- rbind(faction_details(d.complete, ffaction = "galacticempire"),
@@ -743,7 +764,7 @@ faction_plot_swiss <- ggplot(factiondetails_swiss, aes(x=ffaction, y=total_lists
   geom_text(aes(label=total_ships, vjust=1), position=position_dodge(width=0.9)) +
   labs(x="Faction", y="total lists", title="lists analyzed, swiss, with ships per faction") +
   scale_fill_manual(values = factioncolors)+
-  coord_cartesian(ylim=c(0,200)) +
+  coord_cartesian(ylim=c(0,225)) +
   theme(panel.grid.minor=element_blank(),panel.grid.major=element_blank(), axis.text.x = element_text(angle = 45, hjust = 0.6, vjust = 0.7))
 
 #faction_plot_swiss
@@ -763,7 +784,7 @@ faction_plot_cut <- ggplot(factiondetails_cut, aes(x=ffaction, y=total_lists, fi
   geom_text(aes(label=total_ships, vjust=1), position=position_dodge(width=0.9)) +
   labs(x="Faction", y="total lists", title="lists analyzed, cut, with ships per faction") +
   scale_fill_manual(values = factioncolors)+
-  coord_cartesian(ylim=c(0,50)) +
+  coord_cartesian(ylim=c(0,60)) +
   theme(panel.grid.minor=element_blank(),panel.grid.major=element_blank(), axis.text.x = element_text(angle = 45, hjust = 0.6, vjust = 0.7))
 
 #faction_plot_cut
@@ -778,8 +799,11 @@ perSquad_cut_pilots <- plotColPerSquad(d.cut, selectColumn = "pilot", cutoff = 3
 
 perSquadFIELD_swiss_ships <- plotColPerSquadField(d.complete, selectColumn = "ship", cutoff = 40, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_field", plottitle = "swiss, Ships, Wave 3, % of field", denominator = squad_number)
 perSquadFIELD_cut_ships <- plotColPerSquadField(d.cut, selectColumn = "ship", cutoff = 40, factiondetailsdata = factiondetails_cut, plotlabel = "perc_field", plottitle = "cut, Ships, Wave 3, % of field", denominator = squad_number_cut)
-# perSquad_swiss_ships
-# perSquad_cut_ships
+perSquad_swiss_ships
+perSquad_cut_ships
+perSquad_swiss_pilots
+perSquad_cut_pilots
+pilotsPerFaction <- merge(perSquad_swiss_pilots, perSquad_cut_pilots, by="Var1")
 # perSquadFIELD_swiss_ships
 # perSquadFIELD_cut_ships
 
@@ -788,27 +812,43 @@ perSquadFIELD_cut_ships <- plotColPerSquadField(d.cut, selectColumn = "ship", cu
 table(d.complete$pilottype)[1]/nrow(d.complete) #32.5% generics wave3 8.4.
 table(d.complete$pilottype)[2]/nrow(d.complete) #67.5% uniques wave3 8.4.
 d.genUnique <- as.data.frame(table(d.complete$pilottype))
-colnames(d.genUnique) <- c("type", "count")
-pie(d.genUnique$count, labels = d.genUnique$type, main = "Generic vs Unique, Swiss")
+d.genUnique[,"%"] <- round(100*d.genUnique[,2]/sum(d.genUnique[,2]), digits = 2)
+colnames(d.genUnique) <- c("type", "count", "percentage")
+pie(d.genUnique$count, labels = paste(d.genUnique$type, d.genUnique$percentage), main = "Generic vs Unique, Swiss")
 
-unique_pilots <- getPilottype(d.complete) #18.3.19: 808/879 squads with uniques; only trials: 578/624
+df <- data.frame(count = d.genUnique[,2],
+                 type = d.genUnique[,"type"]) %>%
+  mutate(type = factor(type, levels = c("unique", "generic")),
+                    cumulative = cumsum(count),
+                    midpoint = cumulative - count / 2,
+                    label = paste0(type, " ", round(count / sum(count) * 100, 1), "%"))
+
+piechart <- ggplot(df, aes(x = 1, weight = count, fill = type)) +
+  geom_bar(width = 1, position = "stack") +
+  coord_polar(theta = "y") +
+  geom_text(aes(x = 1.3, y = midpoint, label = label))+
+  labs(title = "Generic vs Unique, Swiss, April 2019") +
+  theme_nothing()  
+
+unique_pilots <- getPilottype(d.complete) #18.3.19: 808/879 squads with uniques; 16.4. 611/655
 ID_uniqeupilots <- d.complete[unique_pilots,"matchID"]
-length(ID_uniqeupilots)/squad_number #92% of squads had 1 or more uniques
+length(ID_uniqeupilots)/squad_number #93% of squads had 1 or more uniques
 
 
 d.generics <- d.complete[!(d.complete[,"matchID"]%in%ID_uniqeupilots),]
 length(unique(d.generics$matchID)) #48 squads used generics only!
 sort(table(d.generics$ship), decreasing = T) #18.3.19: 113 y, 27t65, 22 sf, 17 rz2, 9 firesprays, 13 strikers
+#16.4. only generics: 74 Y, 24 t65, 19 x1, 18 sf, 14 arc, 9 b, 9 u, 9 vulture, 7v19 ... 3 rz2
 
 
 
-unique_pilots_imperial <- getPilottype(d.complete, factionF = "galacticempire") #18.3.19: 140/143 97.9%; 96/99 squads
-unique_pilots_rebel <- getPilottype(d.complete, factionF = "rebelalliance") #18.3.19: 247/290 85.2%; 165/195 
-unique_pilots_scum <- getPilottype(d.complete, factionF = "scumandvillainy") #18.3.19: 111/119 93.3%; 66/70
-unique_pilots_resistance <- getPilottype(d.complete, factionF = "resistance") #18.3.19: 207/215 96.3%; 152/157
-unique_pilots_fo <- getPilottype(d.complete, factionF = "firstorder") #18.3.19: 103/112 92%; 72/78
+unique_pilots_imperial <- getPilottype(d.complete, factionF = "galacticempire") #18.3.19: 140/143 97.9%; 96/99 squads; 16.4. 128
+unique_pilots_rebel <- getPilottype(d.complete, factionF = "rebelalliance") #18.3.19: 247/290 85.2%; 165/195;16.4. 185
+unique_pilots_scum <- getPilottype(d.complete, factionF = "scumandvillainy") #18.3.19: 111/119 93.3%; 66/70; 16.4. 55
+unique_pilots_resistance <- getPilottype(d.complete, factionF = "resistance") #18.3.19: 207/215 96.3%; 152/157; 16.4. 72
+unique_pilots_fo <- getPilottype(d.complete, factionF = "firstorder") #18.3.19: 103/112 92%; 72/78; 16.4. 49
 
-rm(ls=unique_pilots, unique_pilots_imperial, unique_pilots_rebel, unique_pilots_scum, ID_uniqeupilots, unique_pilots_resistance,unique_pilots_fo)
+rm(ls=df, unique_pilots, unique_pilots_imperial, unique_pilots_rebel, unique_pilots_scum, ID_uniqeupilots, unique_pilots_resistance,unique_pilots_fo)
 
 #--------- Archetype Analysis------
 #!!! STILL FAULTY, the last entry is not included with getArchetype!
@@ -853,29 +893,61 @@ colnames(mergeArchetype) <- c("archetype", "freq swiss", "freq cut", "conversion
 rownames(mergeArchetype) <- NULL
 
 #some further filtering
-nrow(archetypeSwiss[archetypeSwiss[,2]<2,]) #lists played once: 91 of 186 different archetypes
-nrow(archetypeSwiss[archetypeSwiss[,2]==2,]) #31 twice
-nrow(archetypeSwiss[archetypeSwiss[,2]==3,]) #22 thrice
-nrow(archetypeSwiss[archetypeSwiss[,2]>3,]) #42 more than 3 times; these 42/186 archetypes make up 58% of all lists.
+nrow(archetypeSwiss[archetypeSwiss[,2]<2,]) #lists played once: 95 of 205 different archetypes
+nrow(archetypeSwiss[archetypeSwiss[,2]==2,]) #38 twice
+nrow(archetypeSwiss[archetypeSwiss[,2]==3,]) #21 thrice
+nrow(archetypeSwiss[archetypeSwiss[,2]>3,]) #51 more than 3 times; these 51/205 (25%) archetypes make up X% of all lists.
 
-sum(archetypeSwiss[archetypeSwiss[,2]>2,2]) #lists with 3 or more showings: 375/529 71%
-sum(archetypeSwiss[archetypeSwiss[,2]>3,2]) #the lists with 4 or more showings from 859: 309/529 58%
-sum(archetypeSwiss[archetypeSwiss[,2]<3,2]) #lists with 1-2 showings: 153 29%
+sum(archetypeSwiss[archetypeSwiss[,2]>2,2]) #lists with 3 or more showings: 483/655 74%
+sum(archetypeSwiss[archetypeSwiss[,2]>3,2]) #the lists with 4 or more showings from 859: 420/655 64%
+sum(archetypeSwiss[archetypeSwiss[,2]<3,2]) #lists with 1-2 showings: 171 26%
 
-nrow(archetypeCut[archetypeCut[,2]<2,]) #37/54 (68%) in cut made it just once into cut
+nrow(archetypeCut[archetypeCut[,2]<2,]) #45/74 (61%) in cut made it just once into cut
+#sum of lists in merged archetype with more than 1 showing, swiss to swiss
+sum(mergeArchetype[mergeArchetype[,2]>2,2]) #384/655, 59%
+sum(mergeArchetype[mergeArchetype[,2]>2,3]) #114/140 81% lists played more than twice in swiss made 81% of cut
+sum(mergeArchetype[mergeArchetype[,2]>3,3]) #99/140 71% lists played more than tree times in swiss made 71% of cut
+sum(mergeArchetype[mergeArchetype[,2]>4,3]) #87/140 62% lists played more than four times in swiss made 62% of cut
+sum(mergeArchetype[mergeArchetype[,2]>6,3]) #81/140 58% lists played more than six times in swiss made 58% of cut
 
+#Has maybe potential, but for now pointless. Think about how to further improve it, because the information
+# of a list being x times in swiss making cut Y times could be interesting.
+n_lists_swiss <- data.frame()
+for(i in 1:10){#max(mergeArchetype[,2])
+  n_lists_swiss[i,"number"] <- i+1
+  n_lists_swiss[i,"cumulative_lists_swiss"] <- round(100*sum(mergeArchetype[mergeArchetype[,2]>i,2])/squad_number, digits=2)
+  n_lists_swiss[i,"cumulative_lists_cut"] <- round(100*sum(mergeArchetype[mergeArchetype[,2]>i,3])/squad_number_cut, digits=2)
+}
+n_lists_swiss_melt <- melt(n_lists_swiss, id.vars = "number")
+archetype_plot_swissoriented <- ggplot(data = n_lists_swiss_melt, aes(x = number, y = value, group = variable, color = variable))+
+  geom_line(size = 2)
+archetype_plot_swissoriented
 
+n_lists_cut <- data.frame()
+for(i in 1:max(mergeArchetype[,3])){
+  n_lists_cut[i,"number"] <- i+1
+  n_lists_cut[i,"cumulative_lists_swiss"] <- round(100*sum(mergeArchetype[mergeArchetype[,3]>i,2])/squad_number, digits=2)
+  n_lists_cut[i,"cumulative_lists_cut"] <- round(100*sum(mergeArchetype[mergeArchetype[,3]>i,3])/squad_number_cut, digits=2)
+}
+n_lists_cut_melt <- melt(n_lists_cut, id.vars = "number")
+archetype_plot_cutoriented <- ggplot(data = n_lists_cut_melt, aes(x = number, y = value, group = variable, color = variable))+
+  geom_line(size = 2)
+archetype_plot_cutoriented
+rm(ls=n_lists_swiss, n_lists_swiss_melt,i,n_lists_cut,n_lists_cut_melt,archetype_plot_swissoriented, archetype_plot_cutoriented)
+#sum of lists in merged archetype with more than 1 showing, cut to cut
+sum(mergeArchetype[mergeArchetype[,3]>3,2]) #123/655 19%
+sum(mergeArchetype[mergeArchetype[,3]>3,3]) #51/140 #36%
 #--------- Win/Loss analysis-----
 
 winpilots_swiss <- getPilotdetails(d.complete, fthreshold = 10)
 winpilots_swiss[,"percentage"] <- round(100*as.numeric(as.character(winpilots_swiss[,"wins"]))/(as.numeric(as.character(winpilots_swiss[,"wins"]))+as.numeric(as.character(winpilots_swiss[,"losses"]))), digits=2)
 winpilots_swiss[,"total_games"] <- as.numeric(as.character(winpilots_swiss[,"wins"]))+as.numeric(as.character(winpilots_swiss[,"losses"]))
-winrates_swiss <- ggplot(winpilots_swiss, aes(x=total_games, y=percentage, fill=faction)) +
-  geom_point() +
+winrates_swiss <- ggplot(winpilots_swiss, aes(x=total_games, y=percentage)) +
+  geom_point(shape=1, size = sqrt(as.numeric(as.character(winpilots_swiss$squads)))/2)+#0.5*pi*(1/(-log10(as.numeric(as.character(winpilots_swiss$squads)))))**2) +
   coord_flip() +
   geom_text(aes(label=pilot,hjust=0.5, vjust=-0.5, color = faction), size = 3.5)+
   scale_color_manual(values = c("red2","darkgreen",  "goldenrod1", "springgreen3", "sienna2",  "purple3", "dodgerblue4"))
-#winrates_swiss
+winrates_swiss
 
 winpilots_cut <- getPilotdetails(d.cut, fthreshold = 5)
 winpilots_cut[,"percentage"] <- round(100*as.numeric(as.character(winpilots_cut[,"wins"]))/(as.numeric(as.character(winpilots_cut[,"wins"]))+as.numeric(as.character(winpilots_cut[,"losses"]))), digits=2)
@@ -884,8 +956,44 @@ winrates_cut <- ggplot(winpilots_cut, aes(x=total_games, y=percentage)) +
   geom_point() +
   coord_flip() +
   geom_text(aes(label=pilot,hjust=0.5, vjust=-0.5, color = faction), size = 3.5)+
-  scale_color_manual(values = c("red2", "darkgreen", "springgreen3", "sienna2", "dodgerblue4"))
+  scale_color_manual(values = c("red2","darkgreen",  "springgreen3", "sienna2",  "purple3", "dodgerblue4"))
 
+#--------- Plot Conversion Rate per pilot and per archetype
+#Get individual conversion rates for pilots
+winpilots_swiss <- getPilotdetails(d.complete, fthreshold = 15)
+winpilots_swiss[,"percentage"] <- round(100*as.numeric(as.character(winpilots_swiss[,"wins"]))/(as.numeric(as.character(winpilots_swiss[,"wins"]))+as.numeric(as.character(winpilots_swiss[,"losses"]))), digits=2)
+winpilots_swiss[,"total_games"] <- as.numeric(as.character(winpilots_swiss[,"wins"]))+as.numeric(as.character(winpilots_swiss[,"losses"]))
+winpilots_cut <- getPilotdetails(d.cut, fthreshold = 5)
+winpilots_cut[,"percentage"] <- round(100*as.numeric(as.character(winpilots_cut[,"wins"]))/(as.numeric(as.character(winpilots_cut[,"wins"]))+as.numeric(as.character(winpilots_cut[,"losses"]))), digits=2)
+winpilots_cut[,"total_games"] <- as.numeric(as.character(winpilots_cut[,"wins"]))+as.numeric(as.character(winpilots_cut[,"losses"]))
+pilot_conversion_s <- winpilots_swiss[,]
+pilot_conversion_c <- winpilots_cut[,]
+pilot_conversion <- merge(pilot_conversion_s, pilot_conversion_c, by = "pilot")
+pilot_conversion <- pilot_conversion[,c(1:7,9:13)]
+for(i in 3:12){
+  pilot_conversion[,i] <- as.numeric(as.character(pilot_conversion[,i] ))
+}
+
+pilot_conversion[,"conversion"] <- round(as.numeric(pilot_conversion[,10]/pilot_conversion[,5]), digits=2)
+pilot_conversion <- pilot_conversion[order(pilot_conversion$squads.x, decreasing = T),]
+colnames(pilot_conversion) <- c("pilot", "faction", "wins_swiss", "losses_swiss", "freq_swiss", "percentage_swiss", "games_swiss",
+                                "wins_cut", "losses_cut", "freq_cut", "percentage_cut", "games_cut", "conversion")
+rownames(pilot_conversion) <- NULL
+
+#plot: y=squads, x=conversion rate
+conversionrateplot <- ggplot(pilot_conversion, aes(x=conversion, y=freq_cut)) +
+  geom_point() +
+  geom_text(aes(label=pilot,hjust=0.5, vjust=-0.5, color=faction), size = 2.5)+
+  scale_color_manual(values = c("red2","darkgreen", "springgreen3", "sienna2",  "purple3", "dodgerblue4"))+
+  geom_vline(xintercept=conversion_rate/100)
+
+pilotfreq_winperc <- ggplot(pilot_conversion, aes(x=freq_swiss, y=freq_cut)) +
+  geom_point(shape=1, size = as.numeric(as.character(pilot_conversion$percentage_swiss))/10) +
+  geom_text(aes(label=pilot,hjust=0.5, vjust=-0.5, color=faction), size = 3)+
+  scale_color_manual(values = c("red2","darkgreen",  "springgreen3", "sienna2",  "purple3", "dodgerblue4"))+
+  geom_abline(intercept = 0, slope = conversion_rate/100)
+conversionrateplot
+pilotfreq_winperc
 
 #--------- Analysis of PS -----
 table(d.complete$ps)
@@ -896,18 +1004,18 @@ table(as.character(d.complete[d.complete[,"faction"]=="resistance","ps"]))#the 5
 hist_ps_swiss <- ggplot(d.complete, aes(ps, fill=faction))+
   geom_histogram(binwidth = 0.5, col = "black")+
   scale_fill_manual(values = c("springgreen3", "darkgreen", "red2", "sienna2","goldenrod1",  "purple3", "dodgerblue4")) +
-  coord_cartesian(xlim = c(1,7), ylim = c(0,450))+
-  labs(title="Histogram for Pilot Skill", x="PS", y="count")
+  coord_cartesian(xlim = c(1,7), ylim = c(0,600))+
+  labs(title="Histogram for Pilot Skill, swiss, April 2019", x="PS", y="count")
 hist_ps_cut <- ggplot(d.cut, aes(ps, fill=faction))+
   geom_histogram(binwidth = 0.5, col = "black")+
   scale_fill_manual(values = c("springgreen3", "darkgreen", "red2", "sienna2","goldenrod1",  "purple3", "dodgerblue4")) +
-  coord_cartesian(xlim = c(1,7), ylim = c(0,130))+
-  labs(title="Histogram for Pilot Skill, cut", x="PS", y="count")
+  coord_cartesian(xlim = c(1,7), ylim = c(0,150))+
+  labs(title="Histogram for Pilot Skill, cut, April 2019", x="PS", y="count")
 
-table(as.character(d.complete[d.complete[,"ps"]>4 & d.complete[,"faction"]=="rebelalliance","pilot"]))
-table(as.character(d.complete[d.complete[,"ps"]>4 & d.complete[,"faction"]=="galacticempire","pilot"]))
-table(as.character(d.complete[d.complete[,"ps"]==6 & d.complete[,"faction"]=="scumandvillainy","pilot"]))
-table(as.character(d.complete[d.complete[,"ps"]>4 & d.complete[,"faction"]=="resistance","pilot"]))
+# table(as.character(d.complete[d.complete[,"ps"]>4 & d.complete[,"faction"]=="rebelalliance","pilot"]))
+# table(as.character(d.complete[d.complete[,"ps"]>4 & d.complete[,"faction"]=="galacticempire","pilot"]))
+# table(as.character(d.complete[d.complete[,"ps"]==6 & d.complete[,"faction"]=="scumandvillainy","pilot"]))
+# table(as.character(d.complete[d.complete[,"ps"]>4 & d.complete[,"faction"]=="resistance","pilot"]))
 
 table(d.complete[d.complete[,"ps"]>4, "points"])
 unique(d.complete[d.complete[,"ps"]>4, "matchID"])
@@ -919,10 +1027,10 @@ sort(table(d.complete[d.complete[,"ps"]>4, "pilot"]), decreasing = T)
 d.highps <- d.complete[d.complete[,"ps"]>4, ]
 d.highpspilots <- data.frame(sort(table(d.complete[d.complete[,"ps"]>4, "pilot"]), decreasing = T))
 names(d.highpspilots) <- c("pilot", "amount")
-ggplot(d.highpspilots, aes(pilot, amount)) + 
-  geom_bar(stat="identity")+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
-  annotate(geom = "text", x = 20, y = 50, label = "Total lists: 599\nTotal ships: 2297\nTotal lists with ships I5 or I6: 511 (85%)\nTotal ships I5 or I6: 994 (43%)")
+# ggplot(d.highpspilots, aes(pilot, amount)) + 
+#   geom_bar(stat="identity")+
+#   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+#   annotate(geom = "text", x = 20, y = 50, label = "Total lists: 599\nTotal ships: 2297\nTotal lists with ships I5 or I6: 511 (85%)\nTotal ships I5 or I6: 994 (43%)")
 
 d.highpspilots2 <- data.frame(sort(table(d.complete[d.complete[,"ps"]>4 & d.complete[,"points"]!="", "pilot"]), decreasing = T))
 
@@ -941,14 +1049,14 @@ sum(table(d.highps2[d.highps2[,"ps"]>4, "matchID"])) #967 ships above i4
 sum(table(d.highps2[d.highps2[,"ps"]>4, "points"])[1:13]) #252 #->now need to know for unique matchIDs
 sum(table(d.highps2[!duplicated(d.highps2$matchID),"points"])[1:18]) #all 498
 table(d.highps2[!duplicated(d.highps2$matchID),"points"]) #312 or 63% of lists have 0-2pt bid
-sum(table(d.highps2[!duplicated(d.highps2$matchID),"points"])[1:7])/498 #below 190; 4.8%
-sum(table(d.highps2[!duplicated(d.highps2$matchID),"points"])[1:13])/498 #low to 195; 26%
+sum(table(d.highps2[!duplicated(d.highps2$matchID),"points"])[1:7])/524 #below 190; 4.8%
+sum(table(d.highps2[!duplicated(d.highps2$matchID),"points"])[1:13])/524 #low to 195; 22.5%
 
 d.lowbids <- d.complete[d.complete[,"ps"]>4 & d.complete[,"points"]>198, ]
 d.lowbids2 <- data.frame(sort(table(d.complete[d.complete[,"ps"]>4 & d.complete[,"points"]>197, "pilot"]), decreasing = T))
-length(unique(d.lowbids[d.lowbids[,"ps"]>4, "matchID"])) #263
-sum(table(d.lowbids[d.lowbids[,"ps"]>4, "matchID"])) #445
 names(d.lowbids2) <- c("pilot", "amount")
+length(unique(d.lowbids[d.lowbids[,"ps"]>4, "matchID"])) #284
+sum(table(d.lowbids[d.lowbids[,"ps"]>4, "matchID"])) #453
 ggplot(d.lowbids2, aes(pilot, amount)) + 
   geom_bar(stat="identity")+
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
@@ -972,13 +1080,13 @@ hist_hp_swiss <- ggplot(d.complete, aes(hp, fill=faction))+
   geom_histogram(binwidth = 0.5, col = "black")+
   scale_fill_manual(values = c("springgreen3", "darkgreen", "red2", "sienna2","goldenrod1",  "purple3", "dodgerblue4")) +
   coord_cartesian(xlim = c(3,17), ylim = c(0,600))+
-  labs(title="Histogram for Hull+Shield", x="HP", y="count")
+  labs(title="Histogram for Hull+Shield, swiss, April 2019", x="HP", y="count")
 
 hist_hp_cut<- ggplot(d.cut, aes(hp, fill=faction))+
   geom_histogram(binwidth = 0.5, col = "black")+
   scale_fill_manual(values = c("springgreen3", "darkgreen", "red2", "sienna2","goldenrod1",  "purple3", "dodgerblue4")) +
-  coord_cartesian(xlim = c(3,17), ylim = c(0,120))+
-  labs(title="Histogram for Hull+Shield", x="HP", y="count")
+  coord_cartesian(xlim = c(3,17), ylim = c(0,150))+
+  labs(title="Histogram for Hull+Shield, cut, April 2019", x="HP", y="count")
 
 #HP per squad: matchID, faction, HP
 sumPerSquad <- function(fdata, category, factionF=NULL){
@@ -1042,8 +1150,8 @@ max(allHP_swiss$hp)
 hist_squadhp_swiss <- ggplot(allHP_swiss, aes(hp, fill=faction))+
   geom_histogram(binwidth = 0.5, col = "black")+
   scale_fill_manual(values = c("springgreen3", "darkgreen", "red2", "sienna2","goldenrod1",  "purple3", "dodgerblue4")) +
-  coord_cartesian(xlim = c(min(allHP_swiss$hp),max(allHP_swiss$hp)), ylim = c(0,75))+
-  labs(title="Histogram for HP", x="HP", y="count")
+  coord_cartesian(xlim = c(min(allHP_swiss$hp),max(allHP_swiss$hp)), ylim = c(0,100))+
+  labs(title="Histogram for HP per squad, swiss, April 2019", x="HP", y="count")
 
 allHP_cut <- sumPerSquad(d.cut, "hp")
 allHP_cut$faction <- as.factor(allHP_cut$faction)
@@ -1054,27 +1162,28 @@ max(allHP_cut$hp)
 hist_squadhp_cut <- ggplot(allHP_cut, aes(hp, fill=faction))+
   geom_histogram(binwidth = 0.5, col = "black")+
   scale_fill_manual(values = c("springgreen3", "darkgreen", "red2", "sienna2","goldenrod1",  "purple3", "dodgerblue4")) +
-  coord_cartesian(xlim = c(min(allHP_cut$hp),max(allHP_cut$hp)), ylim = c(0,16))+
-  labs(title="Histogram for HP", x="HP", y="count")
+  coord_cartesian(xlim = c(min(allHP_cut$hp),max(allHP_cut$hp)), ylim = c(0,25))+
+  labs(title="Histogram for HP per squad, cut, April 2019", x="HP", y="count")
 
 
 
 #--------- A-wing Analysis -----
 d.rz2 <- d.complete[d.complete[,"ship"]=="rz2awing",]
-length(unique(d.rz2$player)) #54 players
-length(unique(d.rz2$matchID)) #54 lists
-length(unique(d.rz2$matchID)) /squad_number #10.2% of all squads
-sum(table(d.rz2$matchID) == 5) #9 of 54 had 5 Awings (16.7%)
+length(unique(d.rz2$player)) #63 players
+length(unique(d.rz2$matchID)) #64 lists
+length(unique(d.rz2$matchID)) /squad_number #9.7% of all squads
+sum(table(d.rz2$matchID) == 5) #14 of 64 had 5 Awings (22%)
 sum(table(d.rz2$matchID) == 1)
 length(unique(d.rz2$player))
 
 fiveawings <- table(d.rz2$matchID) == 5
 fiveawings_ids <- as.integer(names(fiveawings[fiveawings==1]))
-length(unique(d.rz2[d.rz2[,"matchID"]%in%fiveawings_ids, "player"])) #9 players
-rm(ls = fiveawings, fiveawings_ids, d.rz2)
+length(unique(d.rz2[d.rz2[,"matchID"]%in%fiveawings_ids, "player"])) #14 players
+d.5rz2 <- d.complete[d.complete[,"matchID"]%in%fiveawings_ids,]
+rm(ls = fiveawings, fiveawings_ids, d.rz2, d.5rz2)
 #do with getPerSquad
 cond <- d.complete[,"ship"]=="rz2awing"
-table(getPerSquad(d.complete, "ship", condition = cond)[,3])
+table(getPerSquad(d.5rz2, "ship", condition = cond)[,3])
 rm(ls = cond)
 #--------- Y-wing Analysis -----
 d.ywing <- d.complete[d.complete[,"ship"]=="btla4ywingREBEL",] #279 ships
@@ -1091,7 +1200,7 @@ rm(ls = d.ywing)
 
 faction_plot_swiss
 faction_plot_cut
-pie(d.genUnique$count, labels = d.genUnique$type, main = "Generic vs Unique, Swiss")
+pie(d.genUnique$count, labels = paste(d.genUnique$type, d.genUnique$percentage), main = "Generic vs Unique, Swiss, April 2019")
 perSquad_swiss_ships
 perSquad_cut_ships
 perSquad_swiss_pilots
@@ -1107,8 +1216,10 @@ hist_ps_cut
 highpsbids
 winrates_swiss
 winrates_cut
-write.table(factiondetails_swiss, file = './factiondetails_swiss.csv',row.names=FALSE, sep=";")
-write.table(factiondetails_cut, file = './factiondetails_cut.csv',row.names=FALSE, sep=";")
-write.table(archetypeSwiss, file = './archetype_swiss.csv',row.names=FALSE, sep=";")
-write.table(archetypeCut, file = './archetype_cut.csv',row.names=FALSE, sep=";")
-write.table(mergeArchetype, file = './mergeArchetype.csv',row.names=FALSE, sep=";")
+conversionrateplot
+write.table(factiondetails_swiss, file = './WAVE3factiondetails_swiss.csv',row.names=FALSE, sep=";")
+write.table(factiondetails_cut, file = './WAVE3factiondetails_cut.csv',row.names=FALSE, sep=";")
+write.table(archetypeSwiss, file = './WAVE3archetype_swiss.csv',row.names=FALSE, sep=";")
+write.table(archetypeCut, file = './WAVE3archetype_cut.csv',row.names=FALSE, sep=";")
+write.table(mergeArchetype, file = './WAVE3mergeArchetype.csv',row.names=FALSE, sep=";")
+write.table(pilotsPerFaction, file = './WAVE3mergePilotsFaction.csv',row.names=FALSE, sep=";")
