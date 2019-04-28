@@ -712,6 +712,15 @@ for (i in 1:nrow(d.wide)){
   if (d.wide[i,"title1"]=="moldycrow"){
     d.wide[i,"attack"] <- 3
   }
+  if (d.wide[i,"gunner1"]=="specialforcesgunner"){
+    d.wide[i,"attack"] <- 3
+  }
+  if (d.wide[i,"configuration1"]=="delta7b"){
+    d.wide[i,"attack"] <- 3
+    d.wide[i,"agility"] <- 2
+    d.wide[i,"hp"] <- d.wide[i,"hp"]+2
+  }
+  
   #ADD WAVE 3, like 7B!
 }
 
@@ -742,13 +751,19 @@ d.complete[,"listID"] <- as.integer(d.complete[,"listID"])
 d.complete[,"matchID"] <- as.integer(d.complete[,"matchID"])
 row.names(d.complete) <- NULL
 
-#--------- basic numbers
+#--------- basic numbers -------
 
 squad_number <- length(unique(d.complete$matchID))#624 lists wave2-2, 655 lists wave 3 (16.4.)
 squad_number_cut <- length(unique(d.complete[d.complete[,"cut"]!="","matchID"])) #110 in the cut wave 2-2, 140 lists wave 3 (16.4.)
 #ratio cut to total:
 squad_number_cut/squad_number #wave 3: 21.4%
 conversion_rate <- round(100*squad_number_cut/squad_number, digits=1)
+# table(d.complete$attack)
+# table(d.complete$agility)
+# table(d.complete$ps)
+
+
+
 
 #--------- factiondetails swiss ------
 factiondetails_swiss <- rbind(faction_details(d.complete, ffaction = "galacticempire"),
@@ -1044,16 +1059,17 @@ length(unique(d.complete[d.complete[,"points"]!="", "matchID"]))
 length(d.complete[d.complete[,"points"]!="", "matchID"])
 length(unique(d.complete[d.complete[,"ps"]>4&d.complete[,"points"]!="", "matchID"]))
 d.highps2 <- d.complete[d.complete[,"ps"]>4 & d.complete[,"points"]!="", ]
-length(unique(d.highps2[d.highps2[,"ps"]>4, "matchID"])) #498 lists with full points
-sum(table(d.highps2[d.highps2[,"ps"]>4, "matchID"])) #967 ships above i4
-sum(table(d.highps2[d.highps2[,"ps"]>4, "points"])[1:13]) #252 #->now need to know for unique matchIDs
+length(unique(d.highps2[d.highps2[,"ps"]>4, "matchID"])) #524 lists with full points
+sum(table(d.highps2[d.highps2[,"ps"]>4, "matchID"])) #901 ships above i4
+sum(table(d.highps2[d.highps2[,"ps"]>4, "points"])[1:11]) #252 #->now need to know for unique matchIDs
 sum(table(d.highps2[!duplicated(d.highps2$matchID),"points"])[1:18]) #all 498
 table(d.highps2[!duplicated(d.highps2$matchID),"points"]) #312 or 63% of lists have 0-2pt bid
 sum(table(d.highps2[!duplicated(d.highps2$matchID),"points"])[1:7])/524 #below 190; 4.8%
-sum(table(d.highps2[!duplicated(d.highps2$matchID),"points"])[1:13])/524 #low to 195; 22.5%
+sum(table(d.highps2[!duplicated(d.highps2$matchID),"points"])[1:11])/524 #low to 195; 22.5%
 
 d.lowbids <- d.complete[d.complete[,"ps"]>4 & d.complete[,"points"]>198, ]
 d.lowbids2 <- data.frame(sort(table(d.complete[d.complete[,"ps"]>4 & d.complete[,"points"]>197, "pilot"]), decreasing = T))
+
 names(d.lowbids2) <- c("pilot", "amount")
 length(unique(d.lowbids[d.lowbids[,"ps"]>4, "matchID"])) #284
 sum(table(d.lowbids[d.lowbids[,"ps"]>4, "matchID"])) #453
@@ -1064,7 +1080,8 @@ ggplot(d.lowbids2, aes(pilot, amount)) +
   annotate(geom = "text", x = 20, y = 50, label = "Filtered for lists with 199 or 200 points!")
 
 d.highpscombined <- merge(d.highpspilots2, d.lowbids2, by = "pilot")
-names(d.highpscombined) <- c("pilot", "high_bid", "low_bid")
+d.highpscombined[,4] <- round(d.highpscombined[,3]/d.highpscombined[,2], digits=2)
+names(d.highpscombined) <- c("pilot", "high_bid", "low_bid", "rate")
 d.highpscombined <- d.highpscombined[order(d.highpscombined$high_bid, decreasing = T),]
 
 highpsbids <- ggplot(d.highpscombined, aes(x=pilot)) + 
@@ -1073,7 +1090,7 @@ highpsbids <- ggplot(d.highpscombined, aes(x=pilot)) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.1))+
   #annotate(geom = "text", x = 18, y = 30, label = "Total lists in dataset: 485\nTotal ships in dataset: 1709\nTotal lists with ships I5 or I6, filtered for low bids: 193 (40% of entire dataset)\nTotal ships I5 or I6 and low bids: 397 (23% of entire dataset)")+
   annotate(geom = "text", x = 20, y = 50, label = "Pink: Filtered for lists with 198 to 200 points!")
-
+highpsbids
 #--------- Analysis of HP  ------
 table(d.complete$hp)
 hist_hp_swiss <- ggplot(d.complete, aes(hp, fill=faction))+
@@ -1196,6 +1213,22 @@ sum(table(d.ywing$matchID) == 1)
 rm(ls = d.ywing)
 
 
+#--------- missiles/torpedoes ------
+d.secondary <- d.complete[d.complete[,"missile1"]!="" | d.complete[,"missile2"]!="" | d.complete[,"torpedo1"]!="" | d.complete[,"torpedo2"]!="",  c(1:11, 20,22, 39:44)]
+table(d.secondary$torpedo1)
+table(d.secondary$missile1)
+sort(table(d.secondary$ship), decreasing = T)
+table(d.secondary[d.secondary[,"ship"]=="vultureclassdroidfighter","missile1"])
+table(d.secondary[d.secondary[,"ship"]=="t65xwing","torpedo1"])
+table(d.secondary[d.secondary[,"ship"]=="btla4ywingREBEL","torpedo1"])
+d.secondary[d.secondary[,"ship"]=="tiesabomber",]
+length(unique(d.secondary[,"matchID"]))
+
+#--------- individual requests ------------
+#Anakin+Jedi+v19
+d.ani <- d.complete[d.complete[,"faction"]=="galacticrepublic",]
+aniID <- d.ani[d.ani[,"pilot"]=="anakinskywalker","matchID"]
+d.ani <- d.ani[d.ani[,"matchID"]%in%aniID, ]
 #Output -----
 
 faction_plot_swiss
