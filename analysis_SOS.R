@@ -634,7 +634,7 @@ d.wave2 <- rbind(d.blacksun, d.redmond, d.fantasy, d.ohio, d.bromley, d.malmo,
 d.wave3 <-  rbind(d.krakow, d.santaclara, d.wyoming, d.gamescube, d.lima, d.nuernberg, d.texas, d.alaska, d.flint, 
                   d.milwaukee, d.maryland, d.paris, d.california, d.florida, d.minnesota)#15 trials, 140 in cut
 
-d.wide <- rbind(d.wave3)#, d.wave2)
+d.wide <- rbind(d.denver, d.adepticon)#, d.wave2)
 #--------- change same pilot names and ship names to rebelalliance"..." and scumandvillainy"..."-----
 
 d.wide[,"ship"] <- as.character(d.wide[,"ship"])
@@ -671,7 +671,7 @@ d.wide[d.wide[,"faction"]=="galacticrepublic"&d.wide[,"ship"]=="arc170starfighte
 # d.wide[d.wide[,"id"]=="kyloren"&d.wide[,"ship"]=="upsilonclassshuttle","id"] <- "KyloShuttle"
 # d.wide[d.wide[,"id"]=="kyloren"&d.wide[,"ship"]=="tiesilencer","id"] <- "KyloSilencer"
 
-#--------- Assign PS, HP, arcs, adjust Atk, Defense, HP -----
+#--------- Assign PS, HP, arcs -----
 # check HWK for moldycrow title, adjust attack and arc accordingly
 # same for "punishing one" on jumpmaster
 # adjust attack based on secondary weapons (cannons)
@@ -733,7 +733,7 @@ for (i in 1:nrow(d.wide)){
   if (d.wide[i,"title1"]=="soullessone"){
     d.wide[i,"hp"] <- d.wide[i,"hp"]+2
   }
-  #ADD WAVE 3, like 7B! soullessone
+  #ADD WAVE 3, like 7B!
 }
 
 
@@ -791,27 +791,28 @@ faction_plot_swiss <- ggplot(factiondetails_swiss, aes(x=ffaction, y=total_lists
   geom_text(aes(label=total_ships, vjust=1), position=position_dodge(width=0.9)) +
   labs(x="Faction", y="total lists", title="lists analyzed, swiss, with ships per faction") +
   scale_fill_manual(values = factioncolors)+
-  coord_cartesian(ylim=c(0,260)) +
+  coord_cartesian(ylim=c(0,150)) +
   theme(panel.grid.minor=element_blank(),panel.grid.major=element_blank(), axis.text.x = element_text(angle = 45, hjust = 0.6, vjust = 0.7))
 
 faction_plot_swiss
 
 #--------- factiondetails cut ------
 d.cut <- d.complete[d.complete[, "cut"]!="",]
+unique(d.cut$faction)
 factiondetails_cut <- rbind(faction_details(d.cut, ffaction = "galacticempire"), 
                             faction_details(d.cut, ffaction = "rebelalliance"),
                             faction_details(d.cut, ffaction = "scumandvillainy"),
                             faction_details(d.cut, ffaction = "resistance"),
                             faction_details(d.cut, ffaction = "firstorder"),
-                            faction_details(d.cut, ffaction = "separatistalliance"),
-                            faction_details(d.cut, ffaction = "galacticrepublic"))
+                            faction_details(d.cut, ffaction = "separatistalliance"))#,
+                            #faction_details(d.cut, ffaction = "galacticrepublic"))
 
 faction_plot_cut <- ggplot(factiondetails_cut, aes(x=ffaction, y=total_lists, fill=ffaction)) +
   geom_bar(stat="identity", position = "dodge", col="black") +
   geom_text(aes(label=total_ships, vjust=1), position=position_dodge(width=0.9)) +
   labs(x="Faction", y="total lists", title="lists analyzed, cut, with ships per faction") +
   scale_fill_manual(values = factioncolors)+
-  coord_cartesian(ylim=c(0,60)) +
+  coord_cartesian(ylim=c(0,20)) +
   theme(panel.grid.minor=element_blank(),panel.grid.major=element_blank(), axis.text.x = element_text(angle = 45, hjust = 0.6, vjust = 0.7))
 
 faction_plot_cut
@@ -819,20 +820,20 @@ faction_plot_cut
 unique(d.complete[,"ship"])
 unique(d.cut[,"ship"])
 
-perSquad_swiss_ships <- plotColPerSquad(d.complete, selectColumn = "ship", cutoff = 5, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_faction", plottitle = "swiss, Ships, Wave 3 2019, % of faction")
-perSquad_cut_ships <- plotColPerSquad(d.cut, selectColumn = "ship", cutoff = 5, factiondetailsdata = factiondetails_cut, plotlabel = "perc_faction", plottitle = "cut, Ships, Wave 3 2019, % of faction")
+perSquad_swiss_ships <- plotColPerSquad(d.complete, selectColumn = "ship", cutoff = 40, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_faction", plottitle = "swiss, Ships, Denver SOS, % of faction")
+perSquad_cut_ships <- plotColPerSquad(d.cut, selectColumn = "ship", cutoff = 19, factiondetailsdata = factiondetails_cut, plotlabel = "perc_faction", plottitle = "cut, Ships, Denver SOS, % of faction")
 
-perSquad_swiss_pilots <- plotColPerSquad(d.complete, selectColumn = "pilot", cutoff = 5, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_faction", plottitle = "swiss, Pilots, Wave 3 2019, % of faction")
-perSquad_cut_pilots <- plotColPerSquad(d.cut, selectColumn = "pilot", cutoff = 5, factiondetailsdata = factiondetails_cut, plotlabel = "perc_faction", plottitle = "cut, Pilots, Wave 3 2019, % of faction")
+perSquad_swiss_pilots <- plotColPerSquad(d.complete, selectColumn = "pilot", cutoff = 40, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_faction", plottitle = "swiss, Pilots, Denver SOS, % of faction")
+perSquad_cut_pilots <- plotColPerSquad(d.cut, selectColumn = "pilot", cutoff = 19, factiondetailsdata = factiondetails_cut, plotlabel = "perc_faction", plottitle = "cut, Pilots, Denver SOS, % of faction")
 
-perSquadFIELD_swiss_ships <- plotColPerSquadField(d.complete, selectColumn = "ship", cutoff = 5, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_field", plottitle = "swiss, Ships, Wave 3, % of field", denominator = squad_number)
-perSquadFIELD_cut_ships <- plotColPerSquadField(d.cut, selectColumn = "ship", cutoff = 5, factiondetailsdata = factiondetails_cut, plotlabel = "perc_field", plottitle = "cut, Ships, Wave 3, % of field", denominator = squad_number_cut)
+perSquadFIELD_swiss_ships <- plotColPerSquadField(d.complete, selectColumn = "ship", cutoff = 40, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_field", plottitle = "swiss, Ships, Denver SOS, % of field", denominator = squad_number)
+perSquadFIELD_cut_ships <- plotColPerSquadField(d.cut, selectColumn = "ship", cutoff = 19, factiondetailsdata = factiondetails_cut, plotlabel = "perc_field", plottitle = "cut, Ships, Denver SOS, % of field", denominator = squad_number_cut)
 perSquad_swiss_ships
 perSquad_cut_ships
 perSquad_swiss_pilots
 perSquad_cut_pilots
 pilotsPerFaction <- merge(perSquad_swiss_pilots, perSquad_cut_pilots, by="Var1")
-# perSquadFIELD_swiss_ships
+perSquadFIELD_swiss_ships
 # perSquadFIELD_cut_ships
 
 #--------- unique vs generic-------
@@ -1206,10 +1207,6 @@ sum(table(d.rz2$matchID) == 5) #14 of 64 had 5 Awings (22%)
 sum(table(d.rz2$matchID) == 1)
 length(unique(d.rz2$player))
 
-a_ids <- unique(d.rz2$matchID)
-d.rz2[, "wins"]
-
-
 fiveawings <- table(d.rz2$matchID) == 5
 fiveawings_ids <- as.integer(names(fiveawings[fiveawings==1]))
 length(unique(d.rz2[d.rz2[,"matchID"]%in%fiveawings_ids, "player"])) #14 players
@@ -1229,6 +1226,15 @@ sum(table(d.ywing$matchID) == 4) #9
 sum(table(d.ywing$matchID) == 1)
 rm(ls = d.ywing)
 
+
+#--------- FatHan Analysis ------
+d.han <- d.complete[d.complete[,"ship"]=="modifiedyt1300lightfreighter",]
+d.han <- d.han[d.han[,"pilot"]=="hansolo-modifiedyt1300lightfreighter",]
+table(d.han$points)
+#--------- QuadPhantom Analysis ------
+d.phantom <- d.complete[d.complete[,"ship"]=="tiephphantom",]
+table(d.phantom$talent1)
+
 #--------- RebelBeef Analysis ------
 d.rebelbeef <- d.complete[d.complete[,"faction"]=="rebelalliance",]
 table(getDetails(d.rebelbeef)[2])
@@ -1241,7 +1247,6 @@ archetypeBeef <- getArchetypeList(d.rebelbeef)
 leiaID <- d.rebelbeef[d.rebelbeef$crew1=="leiaorgana" |d.rebelbeef$crew2=="leiaorgana" , "matchID"]
 d.leiaBeef <- d.rebelbeef[d.rebelbeef[,"matchID"]%in%leiaID,]
 getDetails(d.leiaBeef)
-
 #--------- missiles/torpedoes ------
 d.secondary <- d.complete[d.complete[,"missile1"]!="" | d.complete[,"missile2"]!="" | d.complete[,"torpedo1"]!="" | d.complete[,"torpedo2"]!="",  c(1:11, 20,22, 39:44)]
 table(d.secondary$torpedo1)
