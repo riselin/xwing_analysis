@@ -20,6 +20,7 @@ library(outliers)
 #Constants -----
 factioncolors <- c("darkgreen", "red2", "goldenrod1", "sienna2", "springgreen3", "purple3", "dodgerblue4")
 
+
 #Functions -----
 getmode <- function(v) {
   uniqv <- unique(v)
@@ -114,7 +115,8 @@ getDetails <- function(fdata, factionF = NULL){
         losses <- fdata[i,"losses"]
         hp <- sum(fdata[fdata[,"matchID"]==fdata[i,"matchID"], "hp"])
         ps <- mean(fdata[fdata[,"matchID"]==fdata[i,"matchID"], "ps"])
-        dat <- cbind(matchID=fdata[i,"matchID"], squadsize=size_squad, generics = generics, wins=wins, losses=losses, HP=hp, PS=ps)
+        atk <- sum(fdata[fdata[,"matchID"]==fdata[i, "matchID"], "attack"])
+        dat <- cbind(matchID=fdata[i,"matchID"], squadsize=size_squad, generics = generics, wins=wins, losses=losses, HP=hp, PS=ps, Atk=atk)
         sums <- rbind(sums, dat)
       }#end j==1 if
     }#end if isnull
@@ -126,7 +128,8 @@ getDetails <- function(fdata, factionF = NULL){
         losses <- fdata[i,"losses"]
         hp <- sum(fdata[fdata[,"matchID"]==fdata[i,"matchID"], "hp"])
         ps <- mean(fdata[fdata[,"matchID"]==fdata[i,"matchID"], "ps"])
-        dat <- cbind(matchID=fdata[i,"matchID"],squadsize=size_squad, generics = generics, wins=wins, losses=losses, HP=hp, PS=ps)
+        atk <- sum(fdata[fdata[,"matchID"]==fdata[i, "matchID"], "attack"])
+        dat <- cbind(matchID=fdata[i,"matchID"],squadsize=size_squad, generics = generics, wins=wins, losses=losses, HP=hp, PS=ps, Atk=atk)
         sums <- rbind(sums, dat)
       } #end j==1 if
     }#end else
@@ -618,13 +621,20 @@ lists_possible <- c(lists_possible, nrow(d.minnesota))
 d.minnesota <- tournamentAssembly(d.minnesota, ffrounds = 6)
 lists_entered <- c(lists_entered, max(d.minnesota$listID))
 
+#--------- denver SOS -----
+d.denver <- read.csv("./wave3_part2/parsed/parsed-20190428_denverSOS.csv", header = T, sep = ",")
+lists_possible <- c(lists_possible, nrow(d.denver))
+d.denver <- tournamentAssembly(d.denver, ffrounds = 6)
+lists_entered <- c(lists_entered, max(d.denver$listID))
+
+
 #--------- d.wide composition -----
 d.wave2 <- rbind(d.blacksun, d.redmond, d.fantasy, d.ohio, d.bromley, d.malmo,
                             d.bathurst, d.elementMar, d.kentucky, d.minnesota, d.arizona, d.quebec, d.austin)
 d.wave3 <-  rbind(d.krakow, d.santaclara, d.wyoming, d.gamescube, d.lima, d.nuernberg, d.texas, d.alaska, d.flint, 
                   d.milwaukee, d.maryland, d.paris, d.california, d.florida, d.minnesota)#15 trials, 140 in cut
 
-d.wide <- rbind(d.wave2)#, d.wave2)
+d.wide <- rbind(d.wave3)#, d.wave2)
 #--------- change same pilot names and ship names to rebelalliance"..." and scumandvillainy"..."-----
 
 d.wide[,"ship"] <- as.character(d.wide[,"ship"])
@@ -661,7 +671,7 @@ d.wide[d.wide[,"faction"]=="galacticrepublic"&d.wide[,"ship"]=="arc170starfighte
 # d.wide[d.wide[,"id"]=="kyloren"&d.wide[,"ship"]=="upsilonclassshuttle","id"] <- "KyloShuttle"
 # d.wide[d.wide[,"id"]=="kyloren"&d.wide[,"ship"]=="tiesilencer","id"] <- "KyloSilencer"
 
-#--------- Assign PS, HP, arcs -----
+#--------- Assign PS, HP, arcs, adjust Atk, Defense, HP -----
 # check HWK for moldycrow title, adjust attack and arc accordingly
 # same for "punishing one" on jumpmaster
 # adjust attack based on secondary weapons (cannons)
@@ -720,8 +730,10 @@ for (i in 1:nrow(d.wide)){
     d.wide[i,"agility"] <- 2
     d.wide[i,"hp"] <- d.wide[i,"hp"]+2
   }
-  
-  #ADD WAVE 3, like 7B!
+  if (d.wide[i,"title1"]=="soullessone"){
+    d.wide[i,"hp"] <- d.wide[i,"hp"]+2
+  }
+  #ADD WAVE 3, like 7B! soullessone
 }
 
 
@@ -779,10 +791,10 @@ faction_plot_swiss <- ggplot(factiondetails_swiss, aes(x=ffaction, y=total_lists
   geom_text(aes(label=total_ships, vjust=1), position=position_dodge(width=0.9)) +
   labs(x="Faction", y="total lists", title="lists analyzed, swiss, with ships per faction") +
   scale_fill_manual(values = factioncolors)+
-  coord_cartesian(ylim=c(0,225)) +
+  coord_cartesian(ylim=c(0,260)) +
   theme(panel.grid.minor=element_blank(),panel.grid.major=element_blank(), axis.text.x = element_text(angle = 45, hjust = 0.6, vjust = 0.7))
 
-#faction_plot_swiss
+faction_plot_swiss
 
 #--------- factiondetails cut ------
 d.cut <- d.complete[d.complete[, "cut"]!="",]
@@ -802,18 +814,19 @@ faction_plot_cut <- ggplot(factiondetails_cut, aes(x=ffaction, y=total_lists, fi
   coord_cartesian(ylim=c(0,60)) +
   theme(panel.grid.minor=element_blank(),panel.grid.major=element_blank(), axis.text.x = element_text(angle = 45, hjust = 0.6, vjust = 0.7))
 
-#faction_plot_cut
+faction_plot_cut
 #--------- find squads with 1 or more X -------
 unique(d.complete[,"ship"])
+unique(d.cut[,"ship"])
 
-perSquad_swiss_ships <- plotColPerSquad(d.complete, selectColumn = "ship", cutoff = 34, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_faction", plottitle = "swiss, Ships, Wave 3 2019, % of faction")
-perSquad_cut_ships <- plotColPerSquad(d.cut, selectColumn = "ship", cutoff = 34, factiondetailsdata = factiondetails_cut, plotlabel = "perc_faction", plottitle = "cut, Ships, Wave 3 2019, % of faction")
+perSquad_swiss_ships <- plotColPerSquad(d.complete, selectColumn = "ship", cutoff = 5, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_faction", plottitle = "swiss, Ships, Wave 3 2019, % of faction")
+perSquad_cut_ships <- plotColPerSquad(d.cut, selectColumn = "ship", cutoff = 5, factiondetailsdata = factiondetails_cut, plotlabel = "perc_faction", plottitle = "cut, Ships, Wave 3 2019, % of faction")
 
-perSquad_swiss_pilots <- plotColPerSquad(d.complete, selectColumn = "pilot", cutoff = 30, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_faction", plottitle = "swiss, Pilots, Wave 3 2019, % of faction")
-perSquad_cut_pilots <- plotColPerSquad(d.cut, selectColumn = "pilot", cutoff = 30, factiondetailsdata = factiondetails_cut, plotlabel = "perc_faction", plottitle = "cut, Pilots, Wave 3 2019, % of faction")
+perSquad_swiss_pilots <- plotColPerSquad(d.complete, selectColumn = "pilot", cutoff = 5, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_faction", plottitle = "swiss, Pilots, Wave 3 2019, % of faction")
+perSquad_cut_pilots <- plotColPerSquad(d.cut, selectColumn = "pilot", cutoff = 5, factiondetailsdata = factiondetails_cut, plotlabel = "perc_faction", plottitle = "cut, Pilots, Wave 3 2019, % of faction")
 
-perSquadFIELD_swiss_ships <- plotColPerSquadField(d.complete, selectColumn = "ship", cutoff = 40, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_field", plottitle = "swiss, Ships, Wave 3, % of field", denominator = squad_number)
-perSquadFIELD_cut_ships <- plotColPerSquadField(d.cut, selectColumn = "ship", cutoff = 40, factiondetailsdata = factiondetails_cut, plotlabel = "perc_field", plottitle = "cut, Ships, Wave 3, % of field", denominator = squad_number_cut)
+perSquadFIELD_swiss_ships <- plotColPerSquadField(d.complete, selectColumn = "ship", cutoff = 5, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_field", plottitle = "swiss, Ships, Wave 3, % of field", denominator = squad_number)
+perSquadFIELD_cut_ships <- plotColPerSquadField(d.cut, selectColumn = "ship", cutoff = 5, factiondetailsdata = factiondetails_cut, plotlabel = "perc_field", plottitle = "cut, Ships, Wave 3, % of field", denominator = squad_number_cut)
 perSquad_swiss_ships
 perSquad_cut_ships
 perSquad_swiss_pilots
@@ -1212,6 +1225,18 @@ sum(table(d.ywing$matchID) == 4) #9
 sum(table(d.ywing$matchID) == 1)
 rm(ls = d.ywing)
 
+#--------- RebelBeef Analysis ------
+d.rebelbeef <- d.complete[d.complete[,"faction"]=="rebelalliance",]
+table(getDetails(d.rebelbeef)[2])
+beefdetails <- getDetails(d.rebelbeef)
+beefID <- beefdetails[beefdetails[,"squadsize"]>3,"matchID"]
+dropBeefID <- c(29, 41, 42, 56, 133, 153)
+beefID <- beefID[!beefID %in% dropBeefID]
+d.rebelbeef <- d.rebelbeef[d.rebelbeef[,"matchID"]%in%beefID,]
+archetypeBeef <- getArchetypeList(d.rebelbeef)
+leiaID <- d.rebelbeef[d.rebelbeef$crew1=="leiaorgana" |d.rebelbeef$crew2=="leiaorgana" , "matchID"]
+d.leiaBeef <- d.rebelbeef[d.rebelbeef[,"matchID"]%in%leiaID,]
+getDetails(d.leiaBeef)
 
 #--------- missiles/torpedoes ------
 d.secondary <- d.complete[d.complete[,"missile1"]!="" | d.complete[,"missile2"]!="" | d.complete[,"torpedo1"]!="" | d.complete[,"torpedo2"]!="",  c(1:11, 20,22, 39:44)]
