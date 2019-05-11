@@ -42,7 +42,7 @@ with open(sys.argv[1]) as csv_file:
         parsedSquad = json.loads(xwsSquad)
         faction = parsedSquad['faction']
         for pilot in parsedSquad['pilots']:
-          points_squad = parsedSquad.get('points_squad')
+          points_squad = parsedSquad.get('points')
           id = pilot['id']
           ship = pilot['ship']
           points_ship = pilot['points']
