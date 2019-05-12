@@ -955,6 +955,8 @@ perSquad_cut_pilots <- plotColPerSquad(d.cut, selectColumn = "pilot", cutoff = 3
 
 perSquadFIELD_swiss_ships <- plotColPerSquadField(d.complete, selectColumn = "ship", cutoff = 33, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_field", plottitle = "swiss, Ships, Wave 3, % of field", denominator = squad_number)
 perSquadFIELD_cut_ships <- plotColPerSquadField(d.cut, selectColumn = "ship", cutoff = 30, factiondetailsdata = factiondetails_cut, plotlabel = "perc_field", plottitle = "cut, Ships, Wave 3, % of field", denominator = squad_number_cut)
+perSquadFIELD_swiss_pilots <- plotColPerSquadField(d.complete, selectColumn = "pilot", cutoff = 33, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_field", plottitle = "swiss, Ships, Wave 3, % of field", denominator = squad_number)
+perSquadFIELD_cut_pilots <- plotColPerSquadField(d.cut, selectColumn = "pilot", cutoff = 30, factiondetailsdata = factiondetails_cut, plotlabel = "perc_field", plottitle = "cut, Ships, Wave 3, % of field", denominator = squad_number_cut)
 perSquad_swiss_ships
 perSquad_cut_ships
 perSquad_swiss_pilots
@@ -962,7 +964,8 @@ perSquad_cut_pilots
 #pilotsPerFaction <- merge(perSquad_swiss_pilots, perSquad_cut_pilots, by="Var1")
 perSquadFIELD_swiss_ships
 perSquadFIELD_cut_ships
-
+perSquadFIELD_swiss_pilots
+perSquadFIELD_cut_pilots
 #--------- unique vs generic-------
 #Goal: determine the amount of squads with pure generics or pure unique ships.
 table(d.complete$pilottype)[1]/nrow(d.complete) #32.5% generics wave3 8.4.
@@ -1107,7 +1110,7 @@ sum(mergeArchetype[mergeArchetype[,3]>3,2]) #123/655 19%
 sum(mergeArchetype[mergeArchetype[,3]>3,3]) #51/140 #36%
 #--------- Win/Loss analysis-----
 
-winpilots_swiss <- getPilotdetails(d.complete, fthreshold = 10)
+winpilots_swiss <- getPilotdetails(d.complete, fthreshold = 20)
 winpilots_swiss[,"percentage"] <- round(100*as.numeric(as.character(winpilots_swiss[,"wins"]))/(as.numeric(as.character(winpilots_swiss[,"wins"]))+as.numeric(as.character(winpilots_swiss[,"losses"]))), digits=2)
 winpilots_swiss[,"total_games"] <- as.numeric(as.character(winpilots_swiss[,"wins"]))+as.numeric(as.character(winpilots_swiss[,"losses"]))
 winrates_swiss <- ggplot(winpilots_swiss, aes(x=total_games, y=percentage)) +
