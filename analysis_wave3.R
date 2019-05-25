@@ -534,216 +534,217 @@ lists_entered <- c()
 #--------- wave 3 -----
 #Krakow Hyperspace Trial PL, 23.3.19, top8
 d.krakow <- read.csv("./wave3/parsed/parsed-20190323KrakowHyperspaceTrialPL.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.krakow))
+lists_possible <- c(lists_possible, max(d.krakow$listID))
 d.krakow <- tournamentAssembly(d.krakow, ffrounds = 6)
-lists_entered <- c(lists_entered, max(d.krakow$listID))
+lists_entered <- c(lists_entered, length(unique(d.krakow$listID)))
 
 #Santa Clara Hyperspace Trial US, 23.3.19, top16
 d.santaclara <- read.csv("./wave3/parsed/parsed-20190323SantaClaraHyperspaceTrialUS.csv", header = T, sep = ",")
 d.santaclara[c(222:226),"score"] <- 1
-lists_possible <- c(lists_possible, nrow(d.santaclara))
+lists_possible <- c(lists_possible, max(d.santaclara$listID))
 d.santaclara <- tournamentAssembly(d.santaclara, ffrounds = 6)
-lists_entered <- c(lists_entered, max(d.santaclara$listID))
+lists_entered <- c(lists_entered, length(unique(d.santaclara$listID)))
 
 #Wyoming Hyperspace Trial US, 23.3.19, top8
 d.wyoming <- read.csv("./wave3/parsed/parsed-20190323WyomingHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.wyoming))
+lists_possible <- c(lists_possible, max(d.wyoming$listID))
 d.wyoming <- tournamentAssembly(d.wyoming, ffrounds = 6)
-lists_entered <- c(lists_entered, max(d.wyoming$listID))
+lists_entered <- c(lists_entered, length(unique(d.wyoming$listID)))
 
 #Gamescube Hyperspace Trial AU, 30.3.19, top8
 d.gamescube <- read.csv("./wave3/parsed/parsed-20190330GamescubeHyperspaceTrialAU.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.gamescube))
+lists_possible <- c(lists_possible, max(d.gamescube$listID))
 d.gamescube <- tournamentAssembly(d.gamescube, ffrounds = 6)
-lists_entered <- c(lists_entered, max(d.gamescube$listID))
+lists_entered <- c(lists_entered, length(unique(d.gamescube$listID)))
 
 #Lima Hyperspace Trial PE, 30.3.19, top4
 d.lima <- read.csv("./wave3/parsed/parsed-20190330LimaHyperspacePE.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.lima))
+lists_possible <- c(lists_possible, max(d.lima$listID))
 d.lima <- tournamentAssembly(d.lima, ffrounds = 4)
-lists_entered <- c(lists_entered, max(d.lima$listID))
+lists_entered <- c(lists_entered, length(unique(d.lima$listID)))
 
 #Nuernberg Hyperspace Trial DE, 30.3.19, top8
 d.nuernberg <- read.csv("./wave3/parsed/parsed-20190330NuremborgHyperspaceTrialDE.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.nuernberg))
+lists_possible <- c(lists_possible, max(d.nuernberg$listID))
 d.nuernberg <- tournamentAssembly(d.nuernberg, ffrounds = 6)
-lists_entered <- c(lists_entered, max(d.nuernberg$listID))
+lists_entered <- c(lists_entered, length(unique(d.nuernberg$listID)))
 
 #Texas Hyperspace Trial US, 31.3.19, top8
 d.texas <- read.csv("./wave3/parsed/parsed-20190331TexasHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.texas))
+lists_possible <- c(lists_possible, max(d.texas$listID))
 d.texas <- tournamentAssembly(d.texas, ffrounds = 6)
-lists_entered <- c(lists_entered, max(d.texas$listID))
+lists_entered <- c(lists_entered, length(unique(d.texas$listID)))
 
 #Alaska Hyperspace Trial US, 6.4.19, top8
 d.alaska <- read.csv("./wave3/parsed/parsed-20190406AlaskaHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.alaska))
+lists_possible <- c(lists_possible, max(d.alaska$listID))
 d.alaska <- tournamentAssembly(d.alaska, ffrounds = 4)
-lists_entered <- c(lists_entered, max(d.alaska$listID))
+lists_entered <- c(lists_entered, length(unique(d.alaska$listID)))
 
 #Flint Hyperspace Trial US, 6.4.19, top16
 d.flint <- read.csv("./wave3/parsed/parsed-20190406FlintHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.flint))
+lists_possible <- c(lists_possible, max(d.flint$listID))
 d.flint <- tournamentAssembly(d.flint, ffrounds = 3)
-lists_entered <- c(lists_entered, max(d.flint$listID))
+lists_entered <- c(lists_entered, length(unique(d.flint$listID)))
 
 #Milwaukee Hyperspace Trial US, 6.4.19, top8
 d.milwaukee <- read.csv("./wave3/parsed/parsed-20190406MilwaukeeHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.milwaukee))
+lists_possible <- c(lists_possible, max(d.milwaukee$listID))
 d.milwaukee <- tournamentAssembly(d.milwaukee, ffrounds = 6)
-lists_entered <- c(lists_entered, max(d.milwaukee$listID))
+lists_entered <- c(lists_entered, length(unique(d.milwaukee$listID)))
 
 #Maryland Hyperspace Trial US, 6.4.19, top16
 d.maryland <- read.csv("./wave3/parsed/parsed-20190406MarylandHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.maryland))
+lists_possible <- c(lists_possible, max(d.maryland$listID))
 d.maryland <- tournamentAssembly(d.maryland, ffrounds = 6)
-lists_entered <- c(lists_entered, max(d.maryland$listID))
+lists_entered <- c(lists_entered, length(unique(d.maryland$listID)))
 
 #Paris Hyperspace Trial FR, 6.4.19, top8
 d.paris <- read.csv("./wave3/parsed/parsed-20190406ParisHyperspaceTrialFR.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.paris))
+lists_possible <- c(lists_possible, max(d.paris$listID))
 d.paris <- tournamentAssembly(d.paris, ffrounds = 5)
-lists_entered <- c(lists_entered, max(d.paris$listID))
+lists_entered <- c(lists_entered, length(unique(d.paris$listID)))
 
 #California Hyperspace Trial US, 13.4.19, top8
 d.california <- read.csv("./wave3/parsed/parsed-20190413California5rHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.california))
+lists_possible <- c(lists_possible, max(d.california$listID))
 d.california <- tournamentAssembly(d.california, ffrounds = 5)
-lists_entered <- c(lists_entered, max(d.california$listID))
+lists_entered <- c(lists_entered, length(unique(d.california$listID)))
 
 #Florida Hyperspace Trial US, 13.4.19, top8
 d.florida <- read.csv("./wave3/parsed/parsed-20190413FloridaHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.florida))
+lists_possible <- c(lists_possible, max(d.florida$listID))
 d.florida <- tournamentAssembly(d.florida, ffrounds = 6)
-lists_entered <- c(lists_entered, max(d.florida$listID))
+lists_entered <- c(lists_entered, length(unique(d.florida$listID)))
 
 #Minnesota Hyperspace Trial US, 13.4.19, top8
 d.minnesotaApril <- read.csv("./wave3/parsed/parsed-20190413MinnesotaHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.minnesotaApril))
+lists_possible <- c(lists_possible, max(d.minnesotaApril$listID))
 d.minnesotaApril <- tournamentAssembly(d.minnesotaApril, ffrounds = 6)
-lists_entered <- c(lists_entered, max(d.minnesotaApril$listID))
+lists_entered <- c(lists_entered, length(unique(d.minnesotaApril$listID)))
 
 #PART 2
 
 #Texas2 Hyperspace Trial US, 20.4.19, top8
-d.texas2 <- read.csv("./wave3_part2/parsed/parsed-20190420TexasKnight5rHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.texas2))
-d.texas2 <- tournamentAssembly(d.texas2, ffrounds = 5)
-lists_entered <- c(lists_entered, max(d.texas2$listID))
+d.texasApril <- read.csv("./wave3_part2/parsed/parsed-20190420TexasKnight5rHyperspaceTrialUS.csv", header = T, sep = ",")
+lists_possible <- c(lists_possible, max(d.texasApril$listID))
+d.texasApril <- tournamentAssembly(d.texasApril, ffrounds = 5)
+lists_entered <- c(lists_entered, length(unique(d.texasApril$listID)))
 
 #Vancouver Hyperspace Trial CA, 20.4.19, top8
 d.vancouver <- read.csv("./wave3_part2/parsed/parsed-20190420Vancouver6rHyperspaceTrialCA.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.vancouver))
+lists_possible <- c(lists_possible, max(d.vancouver$listID))
 d.vancouver <- tournamentAssembly(d.vancouver, ffrounds = 6)
-lists_entered <- c(lists_entered, max(d.vancouver$listID))
+lists_entered <- c(lists_entered, length(unique(d.vancouver$listID)))
 
 #Manchester Hyperspace Trial UK, 22.4.19, top8
 d.manchester <- read.csv("./wave3_part2/parsed/parsed-20190422Manchester6rHyperspaceTrialUK.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.manchester))
+lists_possible <- c(lists_possible, max(d.manchester$listID))
 d.manchester <- tournamentAssembly(d.manchester, ffrounds = 6)
-lists_entered <- c(lists_entered, max(d.manchester$listID))
+lists_entered <- c(lists_entered, length(unique(d.manchester$listID)))
 
 #Lille Hyperspace Trial FR, 27.4.19, top8
 d.lille <- read.csv("./wave3_part2/parsed/parsed-20190427Lille5rHyperspaceTrialFR.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.lille))
+lists_possible <- c(lists_possible, max(d.lille$listID))
 d.lille <- tournamentAssembly(d.lille, ffrounds = 5)
-lists_entered <- c(lists_entered, max(d.lille$listID))
+lists_entered <- c(lists_entered, length(unique(d.lille$listID)))
 
 #Quebec Hyperspace Trial CA, 27.4.19, top8
 d.condor <- read.csv("./wave3_part2/parsed/parsed-20190427Quebec5rHyperspaceTrialCA.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.condor))
+lists_possible <- c(lists_possible, max(d.condor$listID))
 d.condor <- tournamentAssembly(d.condor, ffrounds = 5)
-lists_entered <- c(lists_entered, max(d.condor$listID))
+lists_entered <- c(lists_entered, length(unique(d.condor$listID)))
 
 #Oregon Hyperspace Trial US, 28.4.19, top8
 d.oregonMay <- read.csv("./wave3_part2/parsed/parsed-20190428Oregon6rHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.oregonMay))
+lists_possible <- c(lists_possible, max(d.oregonMay$listID))
 d.oregonMay <- tournamentAssembly(d.oregonMay, ffrounds = 6)
-lists_entered <- c(lists_entered, max(d.oregonMay$listID))
+lists_entered <- c(lists_entered, length(unique(d.oregonMay$listID)))
 
 #Minnesota Hyperspace Trial US, 29.4.19, top8
 d.minnesotaMay <- read.csv("./wave3_part2/parsed/parsed-20190429FFGMinnesota5rHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.minnesotaMay))
+lists_possible <- c(lists_possible, max(d.minnesotaMay$listID))
 d.minnesotaMay <- tournamentAssembly(d.minnesotaMay, ffrounds = 5)
-lists_entered <- c(lists_entered, max(d.minnesotaMay$listID))
+lists_entered <- c(lists_entered, length(unique(d.minnesotaMay$listID)))
 
 #Aalborg Hyperspace Trial DK, 4.5.19, top8
 d.aalborg <- read.csv("./wave3_part2/parsed/parsed-20190504Aalborg5rHyperspaceTrialDK.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.aalborg))
+lists_possible <- c(lists_possible, max(d.aalborg$listID))
 d.aalborg <- tournamentAssembly(d.aalborg, ffrounds = 5)
-lists_entered <- c(lists_entered, max(d.aalborg$listID))
+lists_entered <- c(lists_entered, length(unique(d.aalborg$listID)))
 
 #Alberta Hyperspace Trial CA, 4.5.19, top8
 d.alberta <- read.csv("./wave3_part2/parsed/parsed-20190504Alberta4rHyperspaceTrialCA.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.alberta))
+lists_possible <- c(lists_possible, max(d.alberta$listID))
 d.alberta <- tournamentAssembly(d.alberta, ffrounds = 4)
-lists_entered <- c(lists_entered, max(d.alberta$listID))
+lists_entered <- c(lists_entered, length(unique(d.alberta$listID)))
 
 #Bilbao Hyperspace Trial ES, 4.5.19, top16
 d.bilbao <- read.csv("./wave3_part2/parsed/parsed-20190504Bilbao6rHyperspaceTrialES.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.bilbao))
+lists_possible <- c(lists_possible, max(d.bilbao$listID))
 d.bilbao <- tournamentAssembly(d.bilbao, ffrounds = 6)
-lists_entered <- c(lists_entered, max(d.bilbao$listID))
+lists_entered <- c(lists_entered, length(unique(d.bilbao$listID)))
 
 #Gaming Goat Hyperspace Trial US, 4.5.19, top8
 d.gaminggoat <- read.csv("./wave3_part2/parsed/parsed-20190504GamingGoat6rHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.gaminggoat))
+lists_possible <- c(lists_possible, max(d.gaminggoat$listID))
 d.gaminggoat <- tournamentAssembly(d.gaminggoat, ffrounds = 6)
-lists_entered <- c(lists_entered, max(d.gaminggoat$listID))
+lists_entered <- c(lists_entered, length(unique(d.gaminggoat$listID)))
 
 #Illinois Hyperspace Trial US, 4.5.19, top8
 d.illinois <- read.csv("./wave3_part2/parsed/parsed-20190504Illinois6rHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.illinois))
+lists_possible <- c(lists_possible, max(d.illinois$listID))
 d.illinois <- tournamentAssembly(d.illinois, ffrounds = 6)
-lists_entered <- c(lists_entered, max(d.illinois$listID))
+lists_entered <- c(lists_entered, length(unique(d.illinois$listID)))
 
 #Ontario Hyperspace Trial CA, 4.5.19, top8
 d.ontario <- read.csv("./wave3_part2/parsed/parsed-20190504Ontario4rHyperspaceTrialCA.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.ontario))
+lists_possible <- c(lists_possible, max(d.ontario$listID))
 d.ontario <- tournamentAssembly(d.ontario, ffrounds = 4)
-lists_entered <- c(lists_entered, max(d.ontario$listID))
+lists_entered <- c(lists_entered, length(unique(d.ontario$listID)))
 
 #Philadelphia Hyperspace Trial US, 4.5.19, top8
 d.philly <- read.csv("./wave3_part2/parsed/parsed-20190504Philadelphia6rHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.philly))
+lists_possible <- c(lists_possible, max(d.philly$listID))
 d.philly <- tournamentAssembly(d.philly, ffrounds = 6)
-lists_entered <- c(lists_entered, max(d.philly$listID))
+lists_entered <- c(lists_entered, length(unique(d.philly$listID)))
 
 #Reno Hyperspace Trial US, 4.5.19, top8
 d.reno <- read.csv("./wave3_part2/parsed/parsed-20190504Reno5rHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.reno))
+lists_possible <- c(lists_possible, max(d.reno$listID))
 d.reno <- tournamentAssembly(d.reno, ffrounds = 5)
-lists_entered <- c(lists_entered, max(d.reno$listID))
+lists_entered <- c(lists_entered, length(unique(d.reno$listID)))
 
 #SouthCarolina Hyperspace Trial US, 4.5.19, top8
 d.southcarolina <- read.csv("./wave3_part2/parsed/parsed-20190504SouthCarolina6rHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.southcarolina))
+lists_possible <- c(lists_possible, max(d.southcarolina$listID))
 d.southcarolina <- tournamentAssembly(d.southcarolina, ffrounds = 6)
-lists_entered <- c(lists_entered, max(d.southcarolina$listID))
+lists_entered <- c(lists_entered, length(unique(d.southcarolina$listID)))
 
 #Stirling Hyperspace Trial UK, 4.5.19, top8
 d.stirling <- read.csv("./wave3_part2/parsed/parsed-20190504Stirling5rHyperspaceTrialUK.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.stirling))
+lists_possible <- c(lists_possible, max(d.stirling$listID))
 d.stirling <- tournamentAssembly(d.stirling, ffrounds = 5)
-lists_entered <- c(lists_entered, max(d.stirling$listID))
+lists_entered <- c(lists_entered, length(unique(d.stirling$listID)))
 
 #Stratagem Hyperspace Trial AU, 4.5.19, top8
 d.stratagem <- read.csv("./wave3_part2/parsed/parsed-20190504Stratagem5rHyperspaceTrialAU.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.stratagem))
+lists_possible <- c(lists_possible, max(d.stratagem$listID))
 d.stratagem <- tournamentAssembly(d.stratagem, ffrounds = 5)
-lists_entered <- c(lists_entered, max(d.stratagem$listID))
+lists_entered <- c(lists_entered, length(unique(d.stratagem$listID)))
 
 #Zuid Hyperspace Trial NE, 4.5.19, top8
 d.zuid <- read.csv("./wave3_part2/parsed/parsed-20190504Zuid5rHyperspaceTrialNE.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.zuid))
+lists_possible <- c(lists_possible, max(d.zuid$listID))
 d.zuid <- tournamentAssembly(d.zuid, ffrounds = 5)
-lists_entered <- c(lists_entered, max(d.zuid$listID))
+lists_entered <- c(lists_entered, length(unique(d.zuid$listID)))
+
 
 #--------- denver SOS -----
-d.denver <- read.csv("./wave3_part2/parsed/parsed-20190428_denverSOS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, nrow(d.denver))
-d.denver <- tournamentAssembly(d.denver, ffrounds = 6)
-lists_entered <- c(lists_entered, max(d.denver$listID))
+# d.denver <- read.csv("./wave3_part2/parsed/parsed-20190428_denverSOS.csv", header = T, sep = ",")
+# lists_possible <- c(lists_possible, max(d.denver$listID))
+# d.denver <- tournamentAssembly(d.denver, ffrounds = 6)
+# lists_entered <- c(lists_entered, max(d.denver$listID))
 
 
 #--------- d.wide composition -----
@@ -752,7 +753,7 @@ lists_entered <- c(lists_entered, max(d.denver$listID))
 d.wave3 <-  rbind(d.krakow, d.santaclara, d.wyoming, d.gamescube, d.lima, d.nuernberg, d.texas, d.alaska, d.flint, 
                   d.milwaukee, d.maryland, d.paris, d.california, d.florida, d.minnesotaApril)#15 trials, 140 in cut
 
-d.wave3_part2 <- rbind(d.texas2, d.vancouver, d.manchester, d.lille, d.condor, d.oregonMay, d.minnesotaMay, d.aalborg, 
+d.wave3_part2 <- rbind(d.texasApril, d.vancouver, d.manchester, d.lille, d.condor, d.oregonMay, d.minnesotaMay, d.aalborg, 
                        d.alberta, d.bilbao, d.gaminggoat, d.illinois, d.ontario, d.philly, d.reno, d.southcarolina, 
                        d.stirling, d.stratagem, d.zuid) #19 trials, 160 in cut
 
@@ -873,7 +874,7 @@ for (i in 1:length(unique(d.wide[,"uniqueID"]))){
 #   d.bathurst, d.elementMar, d.kentucky, d.minnesota, d.arizona, d.quebec, d.austin, d.wave2)
 rm(ls = d.wave3, d.krakow, d.santaclara, d.wyoming, d.gamescube, d.lima, d.nuernberg, d.texas, 
    d.alaska, d.flint, d.milwaukee, d.maryland, d.paris, d.california, d.florida, d.minnesotaApril)
-rm(ls = d.wave3_part2, d.texas2, d.vancouver, d.manchester, d.lille, d.condor, d.oregonMay, d.minnesotaMay, d.aalborg, 
+rm(ls = d.wave3_part2, d.texasApril, d.vancouver, d.manchester, d.lille, d.condor, d.oregonMay, d.minnesotaMay, d.aalborg, 
    d.alberta, d.bilbao, d.gaminggoat, d.illinois, d.ontario, d.philly, d.reno, d.southcarolina, d.stirling, d.stratagem, d.zuid )
 rm(ls = d.adepticon, d.denver)
 d.complete <- d.wide[,1:45]
@@ -892,12 +893,13 @@ d.complete[,"matchID"] <- as.integer(d.complete[,"matchID"])
 row.names(d.complete) <- NULL
 
 #--------- basic numbers -------
-
+sum(lists_entered)
+sum(lists_possible)
 squad_number <- length(unique(d.complete$matchID))#624 lists wave2-2, 655 lists wave 3 (16.4.)
 squad_number_cut <- length(unique(d.complete[d.complete[,"cut"]!="","matchID"])) #110 in the cut wave 2-2, 140 lists wave 3 (16.4.)
 #ratio cut to total:
-squad_number_cut/squad_number #wave 3: 21.4%
-conversion_rate <- round(100*squad_number_cut/squad_number, digits=1)
+squad_number_cut/sum(lists_possible) #squad_number #wave 3: 21.4%
+conversion_rate <- round(100*squad_number_cut/sum(lists_possible), digits=1)
 # table(d.complete$attack)
 # table(d.complete$agility)
 # table(d.complete$ps)
