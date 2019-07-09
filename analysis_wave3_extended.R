@@ -440,7 +440,7 @@ lists_possible <- c()
 lists_entered <- c()
 
 lists_possible <- c()
-lists_entered <- c
+lists_entered <- c()
 #read from folder: input: folder path. Output: d.wide, fully bound.
 readFromFolder <- function(){
   d.wide <- data.frame()
