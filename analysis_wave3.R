@@ -1,5 +1,10 @@
 # dynamic xwing analysis
 
+#TO DO: 
+# - function to pull time resolved information from factiondetails
+# - add time infor do d.complete? add argument "period" to functions, "all" means full period
+
+
 rm(list = ls())
 setwd("//pasteur/SysBC-Home/riselin/Documents/polybox/privat/xwing/Turniere_2.0")
 setwd("~/polybox/privat/xwing/Turniere_2.0")
@@ -16,6 +21,7 @@ library(igraph)
 library(plyr)
 library(sfsmisc)
 library(outliers)
+library(lubridate) #for date intervals
 
 #Constants -----
 factioncolors <- c("darkgreen", "red2", "goldenrod1", "sienna2", "springgreen3", "purple3", "dodgerblue4")
@@ -97,9 +103,9 @@ getDetails <- function(fdata, factionF = NULL){
       if (i+j >= nrow(fdata)){
         break
       }
-      if (j == max_j){
-        non_primary <- 0
-      }
+      #if (j == max_j){
+      #  non_primary <- 0
+      #}
       
     }#end while
     if (i == nrow(fdata)){
@@ -439,325 +445,22 @@ d.database[,11] <- as.integer(d.database[,11]) #force
 lists_possible <- c()
 lists_entered <- c()
 
-# #--------- wave 2 ------
-# # #Toronto Hyperspace Qualifier, 24.2.19
-# # d.toronto <- read.csv("./wave2_part2/parsed/parsed-20190224TorontoHyperspaceQualifierCA.csv", header = T, sep = ",")
-# # lists_possible <- c(lists_possible, nrow(d.toronto))
-# # d.toronto <- tournamentAssembly(d.toronto, ffrounds = 6)
-# # lists_entered <- c(lists_entered, max(d.toronto$listID))
-# 
-# #Blacksun Trials AU, 2.3.19
-# d.blacksun <- read.csv("./wave2_part2/parsed/parsed-20190302blacksuntrialsAU.csv", header = T, sep = ",")
-# lists_possible <- c(lists_possible, nrow(d.blacksun))
-# d.blacksun <- tournamentAssembly(d.blacksun, ffrounds = 6)
-# lists_entered <- c(lists_entered, max(d.blacksun$listID))
-# 
-# #Redmond HS Trials US, 2.3.19
-# d.redmond <- read.csv("./wave2_part2/parsed/parsed-20190302RedmondHyperspaceTrialUS.csv", header = T, sep = ",")
-# lists_possible <- c(lists_possible, nrow(d.redmond))
-# d.redmond <- tournamentAssembly(d.redmond, ffrounds = 6)
-# lists_entered <- c(lists_entered, max(d.redmond$listID))
-# 
-# #Malmo HS Trials SE, 2.3.19
-# d.malmo <- read.csv("./wave2_part2/parsed/parsed-20190302MalmoHyperspaceTrialSE.csv", header = T, sep = ",")
-# lists_possible <- c(lists_possible, nrow(d.malmo))
-# d.malmo <- tournamentAssembly(d.malmo, ffrounds = 6)
-# lists_entered <- c(lists_entered, max(d.malmo$listID))
-# 
-# #Fantasy HS Trials DE, 9.3.19
-# d.fantasy <- read.csv("./wave2_part2/parsed/parsed-20190309DeutschlandTrial1DE.csv", header = T, sep = ",")
-# lists_possible <- c(lists_possible, nrow(d.fantasy))
-# d.fantasy <- tournamentAssembly(d.fantasy, ffrounds = 6)
-# lists_entered <- c(lists_entered, max(d.fantasy$listID))
-# 
-# #Bromley HS Trials UK, 9.3.19
-# d.bromley <- read.csv("./wave2_part2/parsed/parsed-20190309BromleyHyperspaceTrialUK.csv", header = T, sep = ",")
-# lists_possible <- c(lists_possible, nrow(d.bromley))
-# d.bromley <- tournamentAssembly(d.bromley, ffrounds = 6)
-# lists_entered <- c(lists_entered, max(d.bromley$listID))
-# 
-# #Ohio HS Trials US, 10.3.19
-# d.ohio <- read.csv("./wave2_part2/parsed/parsed-20190310OhioHyperspaceTrialUS.csv", header = T, sep = ",")
-# lists_possible <- c(lists_possible, nrow(d.ohio))
-# d.ohio <- tournamentAssembly(d.ohio, ffrounds = 6)
-# lists_entered <- c(lists_entered, max(d.ohio$listID))
-# 
-# #Bathurst HS Trials AU, 16.3.19
-# d.bathurst <- read.csv("./wave2_part2/parsed/parsed-20190316BathurstHyperspaceTrialAU.csv", header = T, sep = ",")
-# lists_possible <- c(lists_possible, nrow(d.bathurst))
-# d.bathurst <- tournamentAssembly(d.bathurst, ffrounds = 6)
-# lists_entered <- c(lists_entered, max(d.bathurst$listID))
-# 
-# #Element HS Trials Stockport UK, 16.3.19
-# d.elementMar <- read.csv("./wave2_part2/parsed/parsed-20190316ElementHyperspaceTrialUK.csv", header = T, sep = ",")
-# lists_possible <- c(lists_possible, nrow(d.elementMar))
-# d.elementMar <- tournamentAssembly(d.elementMar, ffrounds = 6)
-# lists_entered <- c(lists_entered, max(d.elementMar$listID))
-# 
-# #Kentucky HS Trials US, 16.3.19
-# d.kentucky <- read.csv("./wave2_part2/parsed/parsed-20190316KentuckyHyperspaceTrialUS.csv", header = T, sep = ",")
-# lists_possible <- c(lists_possible, nrow(d.kentucky))
-# d.kentucky <- tournamentAssembly(d.kentucky, ffrounds = 6)
-# lists_entered <- c(lists_entered, max(d.kentucky$listID))
-# 
-# #Minnesota HS Trials US, 16.3.19
-# d.minnesota <- read.csv("./wave2_part2/parsed/parsed-20190316MinnesotaHyperspaceTrialUS.csv", header = T, sep = ",")
-# lists_possible <- c(lists_possible, nrow(d.minnesota))
-# d.minnesota <- tournamentAssembly(d.minnesota, ffrounds = 6)
-# lists_entered <- c(lists_entered, max(d.minnesota$listID))
-# 
-# #Austin HS Trials US, 16.3.19
-# d.austin <- read.csv("./wave2_part2/parsed/parsed-20190316AustinHyperspaceTrialUS.csv", header = T, sep = ",")
-# lists_possible <- c(lists_possible, nrow(d.austin))
-# d.austin <- tournamentAssembly(d.austin, ffrounds = 6)
-# lists_entered <- c(lists_entered, max(d.austin$listID))
-# 
-# #Quebec HS Trials CA, 16.3.19
-# d.quebec <- read.csv("./wave2_part2/parsed/parsed-20190316QuebecHyperspaceTrialCA.csv", header = T, sep = ",")
-# lists_possible <- c(lists_possible, nrow(d.quebec))
-# d.quebec <- tournamentAssembly(d.quebec, ffrounds = 6)
-# lists_entered <- c(lists_entered, max(d.quebec$listID))
-# 
-# #Arizona HS Trials US, 17.3.19
-# d.arizona <- read.csv("./wave2_part2/parsed/parsed-20190317ArizonaHyperspaceTrialUS.csv", header = T, sep = ",")
-# lists_possible <- c(lists_possible, nrow(d.arizona))
-# d.arizona <- tournamentAssembly(d.arizona, ffrounds = 6)
-# lists_entered <- c(lists_entered, max(d.arizona$listID))
-# 
-# 
-# #--------- adepticon -----
-# d.adepticon <- read.csv("./wave3/parsed/parsed-20190329AdepticonSOSextended.csv", header = T, sep = ",")
-# lists_possible <- c(lists_possible, nrow(d.adepticon))
-# d.adepticon <- tournamentAssembly(d.adepticon, ffrounds = 6)
-# lists_entered <- c(lists_entered, max(d.adepticon$listID))
+readFromFolder <- function(){ #uses stringr package for determination of rounds!
+  d.wide <- data.frame()
+  filenames <-  list.files(path = "./wave3_part2/hyperspace/", pattern="*.csv")
+  for (i in 1:length(filenames)){
+    temppath <- paste0("./wave3_part2/hyperspace/", filenames[i])
+    round_number <- as.integer(str_sub(filenames[i], -23,-23))
+    d.temp <- read.csv(temppath, header = T, sep = ",")
+    lists_possible <<- c(lists_possible, max(d.temp$listID))
+    d.temp <- tournamentAssembly(d.temp, ffrounds = round_number)
+    lists_entered <<- c(lists_entered, length(unique(d.temp$listID)))
+    d.wide <- rbind(d.wide, d.temp)
+  }
+  d.wide
+}
+d.wide <- readFromFolder()
 
-#--------- wave 3 -----
-#Krakow Hyperspace Trial PL, 23.3.19, top8
-d.krakow <- read.csv("./wave3/parsed/parsed-20190323KrakowHyperspaceTrialPL.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.krakow$listID))
-d.krakow <- tournamentAssembly(d.krakow, ffrounds = 6)
-lists_entered <- c(lists_entered, length(unique(d.krakow$listID)))
-
-#Santa Clara Hyperspace Trial US, 23.3.19, top16
-d.santaclara <- read.csv("./wave3/parsed/parsed-20190323SantaClaraHyperspaceTrialUS.csv", header = T, sep = ",")
-d.santaclara[c(222:226),"score"] <- 1
-lists_possible <- c(lists_possible, max(d.santaclara$listID))
-d.santaclara <- tournamentAssembly(d.santaclara, ffrounds = 6)
-lists_entered <- c(lists_entered, length(unique(d.santaclara$listID)))
-
-#Wyoming Hyperspace Trial US, 23.3.19, top8
-d.wyoming <- read.csv("./wave3/parsed/parsed-20190323WyomingHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.wyoming$listID))
-d.wyoming <- tournamentAssembly(d.wyoming, ffrounds = 6)
-lists_entered <- c(lists_entered, length(unique(d.wyoming$listID)))
-
-#Gamescube Hyperspace Trial AU, 30.3.19, top8
-d.gamescube <- read.csv("./wave3/parsed/parsed-20190330GamescubeHyperspaceTrialAU.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.gamescube$listID))
-d.gamescube <- tournamentAssembly(d.gamescube, ffrounds = 6)
-lists_entered <- c(lists_entered, length(unique(d.gamescube$listID)))
-
-#Lima Hyperspace Trial PE, 30.3.19, top4
-d.lima <- read.csv("./wave3/parsed/parsed-20190330LimaHyperspacePE.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.lima$listID))
-d.lima <- tournamentAssembly(d.lima, ffrounds = 4)
-lists_entered <- c(lists_entered, length(unique(d.lima$listID)))
-
-#Nuernberg Hyperspace Trial DE, 30.3.19, top8
-d.nuernberg <- read.csv("./wave3/parsed/parsed-20190330NuremborgHyperspaceTrialDE.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.nuernberg$listID))
-d.nuernberg <- tournamentAssembly(d.nuernberg, ffrounds = 6)
-lists_entered <- c(lists_entered, length(unique(d.nuernberg$listID)))
-
-#Texas Hyperspace Trial US, 31.3.19, top8
-d.texas <- read.csv("./wave3/parsed/parsed-20190331TexasHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.texas$listID))
-d.texas <- tournamentAssembly(d.texas, ffrounds = 6)
-lists_entered <- c(lists_entered, length(unique(d.texas$listID)))
-
-#Alaska Hyperspace Trial US, 6.4.19, top8
-d.alaska <- read.csv("./wave3/parsed/parsed-20190406AlaskaHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.alaska$listID))
-d.alaska <- tournamentAssembly(d.alaska, ffrounds = 4)
-lists_entered <- c(lists_entered, length(unique(d.alaska$listID)))
-
-#Flint Hyperspace Trial US, 6.4.19, top16
-d.flint <- read.csv("./wave3/parsed/parsed-20190406FlintHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.flint$listID))
-d.flint <- tournamentAssembly(d.flint, ffrounds = 3)
-lists_entered <- c(lists_entered, length(unique(d.flint$listID)))
-
-#Milwaukee Hyperspace Trial US, 6.4.19, top8
-d.milwaukee <- read.csv("./wave3/parsed/parsed-20190406MilwaukeeHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.milwaukee$listID))
-d.milwaukee <- tournamentAssembly(d.milwaukee, ffrounds = 6)
-lists_entered <- c(lists_entered, length(unique(d.milwaukee$listID)))
-
-#Maryland Hyperspace Trial US, 6.4.19, top16
-d.maryland <- read.csv("./wave3/parsed/parsed-20190406MarylandHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.maryland$listID))
-d.maryland <- tournamentAssembly(d.maryland, ffrounds = 6)
-lists_entered <- c(lists_entered, length(unique(d.maryland$listID)))
-
-#Paris Hyperspace Trial FR, 6.4.19, top8
-d.paris <- read.csv("./wave3/parsed/parsed-20190406ParisHyperspaceTrialFR.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.paris$listID))
-d.paris <- tournamentAssembly(d.paris, ffrounds = 5)
-lists_entered <- c(lists_entered, length(unique(d.paris$listID)))
-
-#California Hyperspace Trial US, 13.4.19, top8
-d.california <- read.csv("./wave3/parsed/parsed-20190413California5rHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.california$listID))
-d.california <- tournamentAssembly(d.california, ffrounds = 5)
-lists_entered <- c(lists_entered, length(unique(d.california$listID)))
-
-#Florida Hyperspace Trial US, 13.4.19, top8
-d.florida <- read.csv("./wave3/parsed/parsed-20190413FloridaHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.florida$listID))
-d.florida <- tournamentAssembly(d.florida, ffrounds = 6)
-lists_entered <- c(lists_entered, length(unique(d.florida$listID)))
-
-#Minnesota Hyperspace Trial US, 13.4.19, top8
-d.minnesotaApril <- read.csv("./wave3/parsed/parsed-20190413MinnesotaHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.minnesotaApril$listID))
-d.minnesotaApril <- tournamentAssembly(d.minnesotaApril, ffrounds = 6)
-lists_entered <- c(lists_entered, length(unique(d.minnesotaApril$listID)))
-
-#PART 2
-
-#Texas2 Hyperspace Trial US, 20.4.19, top8
-d.texasApril <- read.csv("./wave3_part2/parsed/parsed-20190420TexasKnight5rHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.texasApril$listID))
-d.texasApril <- tournamentAssembly(d.texasApril, ffrounds = 5)
-lists_entered <- c(lists_entered, length(unique(d.texasApril$listID)))
-
-#Vancouver Hyperspace Trial CA, 20.4.19, top8
-d.vancouver <- read.csv("./wave3_part2/parsed/parsed-20190420Vancouver6rHyperspaceTrialCA.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.vancouver$listID))
-d.vancouver <- tournamentAssembly(d.vancouver, ffrounds = 6)
-lists_entered <- c(lists_entered, length(unique(d.vancouver$listID)))
-
-#Manchester Hyperspace Trial UK, 22.4.19, top8
-d.manchester <- read.csv("./wave3_part2/parsed/parsed-20190422Manchester6rHyperspaceTrialUK.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.manchester$listID))
-d.manchester <- tournamentAssembly(d.manchester, ffrounds = 6)
-lists_entered <- c(lists_entered, length(unique(d.manchester$listID)))
-
-#Lille Hyperspace Trial FR, 27.4.19, top8
-d.lille <- read.csv("./wave3_part2/parsed/parsed-20190427Lille5rHyperspaceTrialFR.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.lille$listID))
-d.lille <- tournamentAssembly(d.lille, ffrounds = 5)
-lists_entered <- c(lists_entered, length(unique(d.lille$listID)))
-
-#Quebec Hyperspace Trial CA, 27.4.19, top8
-d.condor <- read.csv("./wave3_part2/parsed/parsed-20190427Quebec5rHyperspaceTrialCA.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.condor$listID))
-d.condor <- tournamentAssembly(d.condor, ffrounds = 5)
-lists_entered <- c(lists_entered, length(unique(d.condor$listID)))
-
-#Oregon Hyperspace Trial US, 28.4.19, top8
-d.oregonMay <- read.csv("./wave3_part2/parsed/parsed-20190428Oregon6rHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.oregonMay$listID))
-d.oregonMay <- tournamentAssembly(d.oregonMay, ffrounds = 6)
-lists_entered <- c(lists_entered, length(unique(d.oregonMay$listID)))
-
-#Minnesota Hyperspace Trial US, 29.4.19, top8
-d.minnesotaMay <- read.csv("./wave3_part2/parsed/parsed-20190429FFGMinnesota5rHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.minnesotaMay$listID))
-d.minnesotaMay <- tournamentAssembly(d.minnesotaMay, ffrounds = 5)
-lists_entered <- c(lists_entered, length(unique(d.minnesotaMay$listID)))
-
-#Aalborg Hyperspace Trial DK, 4.5.19, top8
-d.aalborg <- read.csv("./wave3_part2/parsed/parsed-20190504Aalborg5rHyperspaceTrialDK.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.aalborg$listID))
-d.aalborg <- tournamentAssembly(d.aalborg, ffrounds = 5)
-lists_entered <- c(lists_entered, length(unique(d.aalborg$listID)))
-
-#Alberta Hyperspace Trial CA, 4.5.19, top8
-d.alberta <- read.csv("./wave3_part2/parsed/parsed-20190504Alberta4rHyperspaceTrialCA.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.alberta$listID))
-d.alberta <- tournamentAssembly(d.alberta, ffrounds = 4)
-lists_entered <- c(lists_entered, length(unique(d.alberta$listID)))
-
-#Bilbao Hyperspace Trial ES, 4.5.19, top16
-d.bilbao <- read.csv("./wave3_part2/parsed/parsed-20190504Bilbao6rHyperspaceTrialES.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.bilbao$listID))
-d.bilbao <- tournamentAssembly(d.bilbao, ffrounds = 6)
-lists_entered <- c(lists_entered, length(unique(d.bilbao$listID)))
-
-#Gaming Goat Hyperspace Trial US, 4.5.19, top8
-d.gaminggoat <- read.csv("./wave3_part2/parsed/parsed-20190504GamingGoat6rHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.gaminggoat$listID))
-d.gaminggoat <- tournamentAssembly(d.gaminggoat, ffrounds = 6)
-lists_entered <- c(lists_entered, length(unique(d.gaminggoat$listID)))
-
-#Illinois Hyperspace Trial US, 4.5.19, top8
-d.illinois <- read.csv("./wave3_part2/parsed/parsed-20190504Illinois6rHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.illinois$listID))
-d.illinois <- tournamentAssembly(d.illinois, ffrounds = 6)
-lists_entered <- c(lists_entered, length(unique(d.illinois$listID)))
-
-#Ontario Hyperspace Trial CA, 4.5.19, top8
-d.ontario <- read.csv("./wave3_part2/parsed/parsed-20190504Ontario4rHyperspaceTrialCA.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.ontario$listID))
-d.ontario <- tournamentAssembly(d.ontario, ffrounds = 4)
-lists_entered <- c(lists_entered, length(unique(d.ontario$listID)))
-
-#Philadelphia Hyperspace Trial US, 4.5.19, top8
-d.philly <- read.csv("./wave3_part2/parsed/parsed-20190504Philadelphia6rHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.philly$listID))
-d.philly <- tournamentAssembly(d.philly, ffrounds = 6)
-lists_entered <- c(lists_entered, length(unique(d.philly$listID)))
-
-#Reno Hyperspace Trial US, 4.5.19, top8
-d.reno <- read.csv("./wave3_part2/parsed/parsed-20190504Reno5rHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.reno$listID))
-d.reno <- tournamentAssembly(d.reno, ffrounds = 5)
-lists_entered <- c(lists_entered, length(unique(d.reno$listID)))
-
-#SouthCarolina Hyperspace Trial US, 4.5.19, top8
-d.southcarolina <- read.csv("./wave3_part2/parsed/parsed-20190504SouthCarolina6rHyperspaceTrialUS.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.southcarolina$listID))
-d.southcarolina <- tournamentAssembly(d.southcarolina, ffrounds = 6)
-lists_entered <- c(lists_entered, length(unique(d.southcarolina$listID)))
-
-#Stirling Hyperspace Trial UK, 4.5.19, top8
-d.stirling <- read.csv("./wave3_part2/parsed/parsed-20190504Stirling5rHyperspaceTrialUK.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.stirling$listID))
-d.stirling <- tournamentAssembly(d.stirling, ffrounds = 5)
-lists_entered <- c(lists_entered, length(unique(d.stirling$listID)))
-
-#Stratagem Hyperspace Trial AU, 4.5.19, top8
-d.stratagem <- read.csv("./wave3_part2/parsed/parsed-20190504Stratagem5rHyperspaceTrialAU.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.stratagem$listID))
-d.stratagem <- tournamentAssembly(d.stratagem, ffrounds = 5)
-lists_entered <- c(lists_entered, length(unique(d.stratagem$listID)))
-
-#Zuid Hyperspace Trial NE, 4.5.19, top8
-d.zuid <- read.csv("./wave3_part2/parsed/parsed-20190504Zuid5rHyperspaceTrialNE.csv", header = T, sep = ",")
-lists_possible <- c(lists_possible, max(d.zuid$listID))
-d.zuid <- tournamentAssembly(d.zuid, ffrounds = 5)
-lists_entered <- c(lists_entered, length(unique(d.zuid$listID)))
-
-
-#--------- denver SOS -----
-# d.denver <- read.csv("./wave3_part2/parsed/parsed-20190428_denverSOS.csv", header = T, sep = ",")
-# lists_possible <- c(lists_possible, max(d.denver$listID))
-# d.denver <- tournamentAssembly(d.denver, ffrounds = 6)
-# lists_entered <- c(lists_entered, max(d.denver$listID))
-
-
-#--------- d.wide composition -----
-#d.wave2 <- rbind(d.blacksun, d.redmond, d.fantasy, d.ohio, d.bromley, d.malmo,
-#                            d.bathurst, d.elementMar, d.kentucky, d.minnesota, d.arizona, d.quebec, d.austin)
-d.wave3 <-  rbind(d.krakow, d.santaclara, d.wyoming, d.gamescube, d.lima, d.nuernberg, d.texas, d.alaska, d.flint, 
-                  d.milwaukee, d.maryland, d.paris, d.california, d.florida, d.minnesotaApril)#15 trials, 140 in cut
-
-d.wave3_part2 <- rbind(d.texasApril, d.vancouver, d.manchester, d.lille, d.condor, d.oregonMay, d.minnesotaMay, d.aalborg, 
-                       d.alberta, d.bilbao, d.gaminggoat, d.illinois, d.ontario, d.philly, d.reno, d.southcarolina, 
-                       d.stirling, d.stratagem, d.zuid) #19 trials, 160 in cut
-
-d.wide <- rbind(d.wave3, d.wave3_part2)#, d.wave2)
 #--------- change same pilot names and ship names to rebelalliance"..." and scumandvillainy"..."-----
 
 d.wide[,"ship"] <- as.character(d.wide[,"ship"])
@@ -870,13 +573,6 @@ for (i in 1:length(unique(d.wide[,"uniqueID"]))){
 }
 
 #--------- DATA PREP COMPLETE -----
-#rm(ls = d.blacksun, d.redmond, d.fantasy, d.ohio, d.bromley, d.malmo,
-#   d.bathurst, d.elementMar, d.kentucky, d.minnesota, d.arizona, d.quebec, d.austin, d.wave2)
-rm(ls = d.wave3, d.krakow, d.santaclara, d.wyoming, d.gamescube, d.lima, d.nuernberg, d.texas, 
-   d.alaska, d.flint, d.milwaukee, d.maryland, d.paris, d.california, d.florida, d.minnesotaApril)
-rm(ls = d.wave3_part2, d.texasApril, d.vancouver, d.manchester, d.lille, d.condor, d.oregonMay, d.minnesotaMay, d.aalborg, 
-   d.alberta, d.bilbao, d.gaminggoat, d.illinois, d.ontario, d.philly, d.reno, d.southcarolina, d.stirling, d.stratagem, d.zuid )
-rm(ls = d.adepticon, d.denver)
 d.complete <- d.wide[,1:45]
 colnames(d.complete) <- c("player","faction","wins","losses","swiss", "cut", "date","listID", "points", "points_ship","pilot","ship", #11
                           "talent1", "talent2", "force1", "sensor1", "tech1", "tech2", "cannon1", "turret1", "torpedo1", "torpedo2", "missile1", "missile2", #12
@@ -890,15 +586,33 @@ d.complete[,"pilot"] <- as.character(d.complete[,"pilot"])
 d.complete[,"listID"] <- as.integer(d.complete[,"listID"])
 d.complete[,"points_ship"] <- as.integer(d.complete[,"points_ship"])
 d.complete[,"matchID"] <- as.integer(d.complete[,"matchID"])
+d.complete[,"date"] <- ymd(d.complete[,"date"])
 row.names(d.complete) <- NULL
+
+#SET TIME PERIODS FOR TIME RESOLUTION
+period1 <- interval(ymd("2019-03-20"), ymd("2019-04-17"))
+period2 <- interval(ymd("2019-04-18"), ymd("2019-05-15"))
+period3 <- interval(ymd("2019-05-16"), ymd("2019-06-12"))
+period4 <- interval(ymd("2019-06-13"), ymd("2019-07-10"))
+d.period1 <- na.omit(d.complete[d.complete[,"date"]%within% period1,])
+d.period2 <- na.omit(d.complete[d.complete[,"date"]%within% period2,])
+d.period3 <- na.omit(d.complete[d.complete[,"date"]%within% period3,])
+d.period4 <- na.omit(d.complete[d.complete[,"date"]%within% period4,])
+
+squad_number <- length(unique(d.period4$matchID))#624 lists wave2-2, 655 lists wave 3 (16.4.)
+squad_number_cut <- length(unique(d.period4[d.period4[,"cut"]!="","matchID"])) #110 in the cut wave 2-2, 140 lists wave 3 (16.4.)
+#ratio cut to total:
+squad_number_cut/squad_number #wave 3: 21.4% #wave3 end: 19%
+conversion_rate <- round(100*squad_number_cut/squad_number, digits=1)
 
 #--------- basic numbers -------
 sum(lists_entered)
 sum(lists_possible)
+lists_possible <- sum(lists_possible) # both parts of wave 3: 1743
 squad_number <- length(unique(d.complete$matchID))#624 lists wave2-2, 655 lists wave 3 (16.4.)
 squad_number_cut <- length(unique(d.complete[d.complete[,"cut"]!="","matchID"])) #110 in the cut wave 2-2, 140 lists wave 3 (16.4.)
 #ratio cut to total:
-squad_number_cut/sum(lists_possible) #squad_number #wave 3: 21.4%
+squad_number_cut/sum(lists_possible) #squad_number #wave 3: 21.4% #wave3 end: 19%
 conversion_rate <- round(100*squad_number_cut/sum(lists_possible), digits=1)
 # table(d.complete$attack)
 # table(d.complete$agility)
@@ -918,14 +632,79 @@ factiondetails_swiss <- rbind(faction_details(d.complete, ffaction = "galacticem
 
 faction_plot_swiss <- ggplot(factiondetails_swiss, aes(x=ffaction, y=total_lists, fill=ffaction)) +
   geom_bar(stat="identity", position = "dodge", col="black") +
-  geom_text(aes(label=total_ships, vjust=1), position=position_dodge(width=0.9)) +
-  labs(x="Faction", y="total lists", title="lists analyzed, swiss, with ships per faction") +
+  geom_text(aes(label=paste(total_lists_percentage*100,"%"), vjust=1), position=position_dodge(width=0.9)) +
+  labs(x="Faction", y="total lists", title="lists analyzed, swiss, with percentage of field") +
   scale_fill_manual(values = factioncolors)+
-  coord_cartesian(ylim=c(0,400)) +
+  coord_cartesian(ylim=c(0,410)) +
   theme(panel.grid.minor=element_blank(),panel.grid.major=element_blank(), axis.text.x = element_text(angle = 45, hjust = 0.6, vjust = 0.7))
 
 faction_plot_swiss
 
+#time resolved
+factiondetails_swiss_t1 <- rbind(faction_details(d.period1, ffaction = "galacticempire"),
+                              faction_details(d.period1, ffaction = "rebelalliance"),
+                              faction_details(d.period1, ffaction = "scumandvillainy"),
+                              faction_details(d.period1, ffaction = "resistance"),
+                              faction_details(d.period1, ffaction = "firstorder"),
+                              faction_details(d.period1, ffaction = "separatistalliance"),
+                              faction_details(d.period1, ffaction = "galacticrepublic"))
+
+factiondetails_swiss_t2 <- rbind(faction_details(d.period2, ffaction = "galacticempire"),
+                                 faction_details(d.period2, ffaction = "rebelalliance"),
+                                 faction_details(d.period2, ffaction = "scumandvillainy"),
+                                 faction_details(d.period2, ffaction = "resistance"),
+                                 faction_details(d.period2, ffaction = "firstorder"),
+                                 faction_details(d.period2, ffaction = "separatistalliance"),
+                                 faction_details(d.period2, ffaction = "galacticrepublic"))
+
+factiondetails_swiss_t3 <- rbind(faction_details(d.period3, ffaction = "galacticempire"),
+                                 faction_details(d.period3, ffaction = "rebelalliance"),
+                                 faction_details(d.period3, ffaction = "scumandvillainy"),
+                                 faction_details(d.period3, ffaction = "resistance"),
+                                 faction_details(d.period3, ffaction = "firstorder"),
+                                 faction_details(d.period3, ffaction = "separatistalliance"),
+                                 faction_details(d.period3, ffaction = "galacticrepublic"))
+
+factiondetails_swiss_t4 <- rbind(faction_details(d.period4, ffaction = "galacticempire"),
+                                 faction_details(d.period4, ffaction = "rebelalliance"),
+                                 faction_details(d.period4, ffaction = "scumandvillainy"),
+                                 faction_details(d.period4, ffaction = "resistance"),
+                                 faction_details(d.period4, ffaction = "firstorder"),
+                                 faction_details(d.period4, ffaction = "separatistalliance"),
+                                 faction_details(d.period4, ffaction = "galacticrepublic"))
+#plot average squad size over time
+t_squadsize <- c()
+t_squadsize <- data.frame(cbind(faction=as.character(factiondetails_swiss$ffaction), t1=factiondetails_swiss_t1$faction_avg, t2=factiondetails_swiss_t2$faction_avg, t3=factiondetails_swiss_t3$faction_avg, t4=factiondetails_swiss_t4$faction_avg))
+t_squadsize <- melt(t_squadsize, id.vars = c("faction"))
+colnames(t_squadsize) <- c("faction", "timepoint", "squadsize")
+t_squadsize$faction <- factor(t_squadsize$faction, levels = c("galacticempire", "rebelalliance", "scumandvillainy", "resistance", "firstorder", "separatistalliance", "galacticrepublic"))
+t_squadsize <- t_squadsize[order(t_squadsize$faction),]
+t_squadsize$timepoint <- as.integer(substr(t_squadsize$timepoint,2,2))
+t_squadsize$squadsize <- as.double(t_squadsize$squadsize)
+t_squadsize
+ggplot(data = t_squadsize, aes(x=timepoint, y=squadsize)) + 
+  geom_line(aes(colour=faction)) +
+  scale_color_manual(values = factioncolors) + 
+  coord_cartesian(ylim = c(2, 8)) 
+
+
+#plot list percentage over time
+
+t_listperc <- c()
+t_listperc <- data.frame(cbind(faction=as.character(factiondetails_swiss$ffaction), t1=factiondetails_swiss_t1$total_lists_percentage, t2=factiondetails_swiss_t2$total_lists_percentage, t3=factiondetails_swiss_t3$total_lists_percentage, t4=factiondetails_swiss_t4$total_lists_percentage))
+t_listperc <- melt(t_listperc, id.vars = c("faction"))
+colnames(t_listperc) <- c("faction", "timepoint", "listperc")
+t_listperc$faction <- factor(t_listperc$faction, levels = c("galacticempire", "rebelalliance", "scumandvillainy", "resistance", "firstorder", "separatistalliance", "galacticrepublic"))
+t_listperc <- t_listperc[order(t_listperc$faction),]
+t_listperc$timepoint <- as.integer(substr(t_listperc$timepoint,2,2))
+t_listperc$listperc <- as.double(t_listperc$listperc)*100
+t_listperc
+
+ggplot(data = t_listperc, aes(x=timepoint, y=listperc)) + 
+  geom_line(aes(colour=faction)) +
+  scale_color_manual(values = factioncolors) + 
+  coord_cartesian(ylim = c(0, 40)) 
+rm(ls=t_squadsize, t_listperc, factiondetails_swiss_t1, factiondetails_swiss_t2, factiondetails_swiss_t3, factiondetails_swiss_t4)
 #--------- factiondetails cut ------
 d.cut <- d.complete[d.complete[, "cut"]!="",]
 factiondetails_cut <- rbind(faction_details(d.cut, ffaction = "galacticempire"), 
@@ -938,32 +717,103 @@ factiondetails_cut <- rbind(faction_details(d.cut, ffaction = "galacticempire"),
 
 faction_plot_cut <- ggplot(factiondetails_cut, aes(x=ffaction, y=total_lists, fill=ffaction)) +
   geom_bar(stat="identity", position = "dodge", col="black") +
-  geom_text(aes(label=total_ships, vjust=1), position=position_dodge(width=0.9)) +
-  labs(x="Faction", y="total lists", title="lists analyzed, cut, with ships per faction") +
+  geom_text(aes(label=paste(total_lists_percentage*100,"%"), vjust=1), position=position_dodge(width=0.9)) +
+  labs(x="Faction", y="total lists", title="lists analyzed, with percentage of field") +
   scale_fill_manual(values = factioncolors)+
-  coord_cartesian(ylim=c(0,110)) +
+  coord_cartesian(ylim=c(0,105)) +
   theme(panel.grid.minor=element_blank(),panel.grid.major=element_blank(), axis.text.x = element_text(angle = 45, hjust = 0.6, vjust = 0.7))
 
 faction_plot_cut
+
+d.period1cut <- d.period1[d.period1[, "cut"]!="",]
+d.period2cut <- d.period2[d.period2[, "cut"]!="",]
+d.period3cut <- d.period3[d.period3[, "cut"]!="",]
+d.period4cut <- d.period4[d.period4[, "cut"]!="",]
+
+factiondetails_cut_t1 <- rbind(faction_details(d.period1cut, ffaction = "galacticempire"),
+                                 faction_details(d.period1cut, ffaction = "rebelalliance"),
+                                 faction_details(d.period1cut, ffaction = "scumandvillainy"),
+                                 faction_details(d.period1cut, ffaction = "resistance"),
+                                 faction_details(d.period1cut, ffaction = "firstorder"),
+                                 faction_details(d.period1cut, ffaction = "separatistalliance"),
+                                 faction_details(d.period1cut, ffaction = "galacticrepublic"))
+
+factiondetails_cut_t2 <- rbind(faction_details(d.period2cut, ffaction = "galacticempire"),
+                                 faction_details(d.period2cut, ffaction = "rebelalliance"),
+                                 faction_details(d.period2cut, ffaction = "scumandvillainy"),
+                                 faction_details(d.period2cut, ffaction = "resistance"),
+                                 faction_details(d.period2cut, ffaction = "firstorder"),
+                                 faction_details(d.period2cut, ffaction = "separatistalliance"),
+                                 faction_details(d.period2cut, ffaction = "galacticrepublic"))
+
+factiondetails_cut_t3 <- rbind(faction_details(d.period3cut, ffaction = "galacticempire"),
+                                 faction_details(d.period3cut, ffaction = "rebelalliance"),
+                                 faction_details(d.period3cut, ffaction = "scumandvillainy"),
+                                 faction_details(d.period3cut, ffaction = "resistance"),
+                                 faction_details(d.period3cut, ffaction = "firstorder"),
+                                 faction_details(d.period3cut, ffaction = "separatistalliance"),
+                                 faction_details(d.period3cut, ffaction = "galacticrepublic"))
+
+factiondetails_cut_t4 <- rbind(faction_details(d.period4cut, ffaction = "galacticempire"),
+                                 faction_details(d.period4cut, ffaction = "rebelalliance"),
+                                 faction_details(d.period4cut, ffaction = "scumandvillainy"),
+                                 faction_details(d.period4cut, ffaction = "resistance"),
+                                 faction_details(d.period4cut, ffaction = "firstorder"),
+                                 faction_details(d.period4cut, ffaction = "separatistalliance"),
+                                 faction_details(d.period4cut, ffaction = "galacticrepublic"))
+#plot average squad size over time
+t_squadsize_cut <- c()
+t_squadsize_cut <- data.frame(cbind(faction=as.character(factiondetails_cut$ffaction),  t2=factiondetails_cut_t2$faction_avg, t3=factiondetails_cut_t3$faction_avg, t4=factiondetails_cut_t4$faction_avg))
+t_squadsize_cut <- melt(t_squadsize_cut, id.vars = c("faction"))
+colnames(t_squadsize_cut) <- c("faction", "timepoint", "squadsize")
+t_squadsize_cut$faction <- factor(t_squadsize_cut$faction, levels = c("galacticempire", "rebelalliance", "scumandvillainy", "resistance", "firstorder", "separatistalliance", "galacticrepublic"))
+t_squadsize_cut <- t_squadsize_cut[order(t_squadsize_cut$faction),]
+t_squadsize_cut$timepoint <- as.integer(substr(t_squadsize_cut$timepoint,2,2))
+t_squadsize_cut$squadsize <- as.double(t_squadsize_cut$squadsize)
+t_squadsize_cut
+ggplot(data = t_squadsize_cut, aes(x=timepoint, y=squadsize)) + 
+  geom_line(aes(colour=faction)) +
+  scale_color_manual(values = factioncolors) + 
+  coord_cartesian(ylim = c(2, 8)) 
+
+
+#plot list percentage over time
+
+t_listperc_cut <- c()
+t_listperc_cut <- data.frame(cbind(faction=as.character(factiondetails_swiss$ffaction), t2=factiondetails_cut_t2$total_lists_percentage, t3=factiondetails_cut_t3$total_lists_percentage, t4=factiondetails_cut_t4$total_lists_percentage))
+t_listperc_cut <- melt(t_listperc_cut, id.vars = c("faction"))
+colnames(t_listperc_cut) <- c("faction", "timepoint", "listperc")
+t_listperc_cut$faction <- factor(t_listperc_cut$faction, levels = c("galacticempire", "rebelalliance", "scumandvillainy", "resistance", "firstorder", "separatistalliance", "galacticrepublic"))
+t_listperc_cut <- t_listperc_cut[order(t_listperc_cut$faction),]
+t_listperc_cut$timepoint <- as.integer(substr(t_listperc_cut$timepoint,2,2))
+t_listperc_cut$listperc <- as.double(t_listperc_cut$listperc)*100
+t_listperc_cut
+
+ggplot(data = t_listperc_cut, aes(x=timepoint, y=listperc)) + 
+  geom_line(aes(colour=faction)) +
+  scale_color_manual(values = factioncolors) + 
+  coord_cartesian(ylim = c(0, 40)) 
+
+rm(ls=t_squadsize_cut, t_listperc_cut,  factiondetails_cut_t2, factiondetails_cut_t3, factiondetails_cut_t4) #factiondetails_cut_t1,
+
 #--------- find squads with 1 or more X -------
-unique(d.complete[,"ship"])
-unique(d.cut[,"ship"])
+unique(d.complete[,"ship"]) #35
+unique(d.cut[,"ship"]) #32
 
-perSquad_swiss_ships <- plotColPerSquad(d.complete, selectColumn = "ship", cutoff = 33, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_faction", plottitle = "swiss, Ships, Wave 3 2019, % of faction")
-perSquad_cut_ships <- plotColPerSquad(d.cut, selectColumn = "ship", cutoff = 30, factiondetailsdata = factiondetails_cut, plotlabel = "perc_faction", plottitle = "cut, Ships, Wave 3 2019, % of faction")
-
+perSquad_swiss_ships <- plotColPerSquad(d.complete, selectColumn = "ship", cutoff = 35, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_faction", plottitle = "swiss, Ships, Wave 3 2019, % of faction")
+perSquad_cut_ships <- plotColPerSquad(d.cut, selectColumn = "ship", cutoff = 32, factiondetailsdata = factiondetails_cut, plotlabel = "perc_faction", plottitle = "cut, Ships, Wave 3 2019, % of faction")
 perSquad_swiss_pilots <- plotColPerSquad(d.complete, selectColumn = "pilot", cutoff = 35, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_faction", plottitle = "swiss, Pilots, Wave 3 2019, % of faction")
-perSquad_cut_pilots <- plotColPerSquad(d.cut, selectColumn = "pilot", cutoff = 35, factiondetailsdata = factiondetails_cut, plotlabel = "perc_faction", plottitle = "cut, Pilots, Wave 3 2019, % of faction")
+perSquad_cut_pilots <- plotColPerSquad(d.cut, selectColumn = "pilot", cutoff = 32, factiondetailsdata = factiondetails_cut, plotlabel = "perc_faction", plottitle = "cut, Pilots, Wave 3 2019, % of faction")
 
-perSquadFIELD_swiss_ships <- plotColPerSquadField(d.complete, selectColumn = "ship", cutoff = 33, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_field", plottitle = "swiss, Ships, Wave 3, % of field", denominator = squad_number)
-perSquadFIELD_cut_ships <- plotColPerSquadField(d.cut, selectColumn = "ship", cutoff = 30, factiondetailsdata = factiondetails_cut, plotlabel = "perc_field", plottitle = "cut, Ships, Wave 3, % of field", denominator = squad_number_cut)
-perSquadFIELD_swiss_pilots <- plotColPerSquadField(d.complete, selectColumn = "pilot", cutoff = 33, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_field", plottitle = "swiss, Ships, Wave 3, % of field", denominator = squad_number)
-perSquadFIELD_cut_pilots <- plotColPerSquadField(d.cut, selectColumn = "pilot", cutoff = 30, factiondetailsdata = factiondetails_cut, plotlabel = "perc_field", plottitle = "cut, Ships, Wave 3, % of field", denominator = squad_number_cut)
+perSquadFIELD_swiss_ships <- plotColPerSquadField(d.complete, selectColumn = "ship", cutoff = 35, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_field", plottitle = "swiss, Ships, Wave 3, % of field", denominator = squad_number)
+perSquadFIELD_cut_ships <- plotColPerSquadField(d.cut, selectColumn = "ship", cutoff = 32, factiondetailsdata = factiondetails_cut, plotlabel = "perc_field", plottitle = "cut, Ships, Wave 3, % of field", denominator = squad_number_cut)
+perSquadFIELD_swiss_pilots <- plotColPerSquadField(d.complete, selectColumn = "pilot", cutoff = 35, factiondetailsdata = factiondetails_swiss, plotlabel = "perc_field", plottitle = "swiss, Ships, Wave 3, % of field", denominator = squad_number)
+perSquadFIELD_cut_pilots <- plotColPerSquadField(d.cut, selectColumn = "pilot", cutoff = 32, factiondetailsdata = factiondetails_cut, plotlabel = "perc_field", plottitle = "cut, Ships, Wave 3, % of field", denominator = squad_number_cut)
+
 perSquad_swiss_ships
 perSquad_cut_ships
 perSquad_swiss_pilots
 perSquad_cut_pilots
-#pilotsPerFaction <- merge(perSquad_swiss_pilots, perSquad_cut_pilots, by="Var1")
 perSquadFIELD_swiss_ships
 perSquadFIELD_cut_ships
 perSquadFIELD_swiss_pilots
@@ -1041,17 +891,21 @@ getArchetypeList <- function(fdata,ffaction=NULL){
   overview_archetype
 }
 
-archetypeSwiss <- getArchetypeList(d.complete, ffaction = "galacticrepublic")
+archetypeSwiss <- getArchetypeList(d.complete)
 archetypeCut <- getArchetypeList(d.cut)
 
 archetypeSwiss
 archetypeCut
+getMergedArchetype <- function(fdata_1, fdata_2){
+  mergedArchetype <- merge(fdata_1, fdata_2, by = "archetype")
+  mergedArchetype[,4] <- round(mergedArchetype[,3]/mergedArchetype[,2], digits = 2)
+  colnames(mergedArchetype) <- c("archetype", "freq swiss", "freq cut", "conversion")
+  mergedArchetype <- mergedArchetype[order(mergedArchetype$`freq swiss`, decreasing = T),]
+  rownames(mergedArchetype) <- NULL
+  mergedArchetype
+}
 
-mergeArchetype <- merge(archetypeSwiss, archetypeCut, by = "archetype")
-mergeArchetype[,4] <- round(mergeArchetype[,3]/mergeArchetype[,2], digits = 2)
-colnames(mergeArchetype) <- c("archetype", "freq swiss", "freq cut", "conversion")
-mergeArchetype <- mergeArchetype[order(mergeArchetype$`freq swiss`, decreasing = T),]
-rownames(mergeArchetype) <- NULL
+mergeArchetype <- getMergedArchetype(archetypeSwiss, archetypeCut)
 
 #some further filtering
 nrow(archetypeSwiss[archetypeSwiss[,2]<2,]) #lists played once: 126 of 295 different archetypes
@@ -1060,20 +914,20 @@ nrow(archetypeSwiss[archetypeSwiss[,2]==3,]) #21 thrice
 nrow(archetypeSwiss[archetypeSwiss[,2]>3,]) #51 more than 3 times; these 88/295 (30%) archetypes make up X% of all lists.
 sum(archetypeSwiss[archetypeSwiss[,2]>3,2]) #1088 or 78%. SO 30% of lists make 80% of the meta.
 nrow(archetypeSwiss[archetypeSwiss[,2]>5,]) #67 more than 3 times; these 67/295 (23%) archetypes make up X% of all lists.
-sum(archetypeSwiss[archetypeSwiss[,2]>5,2])/1402 #995 or 71%. SO 23% of lists make 70% of the meta
+sum(archetypeSwiss[archetypeSwiss[,2]>5,2])/903 #995 or 71%. SO 23% of lists make 70% of the meta
+
 metaArchetypes <- archetypeSwiss[archetypeSwiss[,2]>5,]
-mergeMetaArchetype <- merge(metaArchetypes, archetypeCut, by = "archetype")
-mergeMetaArchetype[,4] <- round(mergeMetaArchetype[,3]/mergeMetaArchetype[,2], digits = 2)
-colnames(mergeMetaArchetype) <- c("archetype", "freq swiss", "freq cut", "conversion")
-mergeMetaArchetype <- mergeMetaArchetype[order(mergeMetaArchetype$`freq swiss`, decreasing = T),]
-rownames(mergeMetaArchetype) <- NULL
+mergeMetaArchetype <- getMergedArchetype(metaArchetypes, archetypeCut)
+
+
 sum(mergeMetaArchetype$`freq cut`)
 filterMetaArchetype <- mergeMetaArchetype[mergeMetaArchetype[,3]>1,]
 write.table(filterMetaArchetype, file = './WAVE3mergeMetaArchetype.csv',row.names=FALSE, sep=";")
 
 sum(archetypeSwiss[archetypeSwiss[,2]>2,2]) #lists with 3 or more showings: 483/655 74%
-sum(archetypeSwiss[archetypeSwiss[,2]>3,2]) #the lists with 4 or more showings from 859: 420/655 64%
+sum(archetypeSwiss[archetypeSwiss[,2]>4,2]) #the lists with 4 or more showings from 859: 420/655 64%
 sum(archetypeSwiss[archetypeSwiss[,2]<3,2]) #lists with 1-2 showings: 171 26%
+
 
 nrow(archetypeCut[archetypeCut[,2]<2,]) #45/74 (61%) in cut made it just once into cut
 #sum of lists in merged archetype with more than 1 showing, swiss to swiss
@@ -1119,7 +973,7 @@ winrates_swiss <- ggplot(winpilots_swiss, aes(x=total_games, y=percentage)) +
   geom_point(shape=1, size = sqrt(as.numeric(as.character(winpilots_swiss$squads)))/2)+#0.5*pi*(1/(-log10(as.numeric(as.character(winpilots_swiss$squads)))))**2) +
   coord_flip() +
   geom_text(aes(label=pilot,hjust=0.5, vjust=-0.5, color = faction), size = 3.5)+
-  scale_color_manual(values = c("red2","darkgreen",  "goldenrod1", "springgreen3", "sienna2",  "purple3", "dodgerblue4"))
+  scale_color_manual(values = c("red2","darkgreen", "sienna2", "dodgerblue4", "purple3", "goldenrod1", "springgreen3"))
 winrates_swiss
 
 winpilots_cut <- getPilotdetails(d.cut, fthreshold = 5)
@@ -1129,8 +983,8 @@ winrates_cut <- ggplot(winpilots_cut, aes(x=total_games, y=percentage)) +
   geom_point() +
   coord_flip() +
   geom_text(aes(label=pilot,hjust=0.5, vjust=-0.5, color = faction), size = 3.5)+
-  scale_color_manual(values = c("red2","darkgreen",  "springgreen3", "sienna2",  "purple3", "dodgerblue4"))
-
+  scale_color_manual(values = c("red2","darkgreen", "sienna2", "dodgerblue4", "purple3", "goldenrod1", "springgreen3"))
+winrates_cut
 #--------- Plot Conversion Rate per pilot and per archetype
 #Get individual conversion rates for pilots
 winpilots_swiss <- getPilotdetails(d.complete, fthreshold = 15)
@@ -1157,13 +1011,13 @@ rownames(pilot_conversion) <- NULL
 conversionrateplot <- ggplot(pilot_conversion, aes(x=conversion, y=freq_cut)) +
   geom_point() +
   geom_text(aes(label=pilot,hjust=0.5, vjust=-0.5, color=faction), size = 2.5)+
-  scale_color_manual(values = c("red2","darkgreen", "springgreen3", "sienna2",  "purple3", "dodgerblue4"))+
+  scale_color_manual(values = c("red2","darkgreen", "sienna2", "dodgerblue4",  "purple3", "goldenrod1",  "springgreen3"))+
   geom_vline(xintercept=conversion_rate/100)
 
 pilotfreq_winperc <- ggplot(pilot_conversion, aes(x=freq_swiss, y=freq_cut)) +
   geom_point(shape=1, size = as.numeric(as.character(pilot_conversion$percentage_swiss))/10) +
   geom_text(aes(label=pilot,hjust=0.5, vjust=-0.5, color=faction), size = 3)+
-  scale_color_manual(values = c("red2","darkgreen",  "springgreen3", "sienna2",  "purple3", "dodgerblue4"))+
+  scale_color_manual(values = c("red2","darkgreen", "sienna2", "dodgerblue4",  "purple3", "goldenrod1",  "springgreen3"))+
   geom_abline(intercept = 0, slope = conversion_rate/100)
 conversionrateplot
 pilotfreq_winperc
@@ -1357,13 +1211,13 @@ d.rz2[, "wins"]
 
 fiveawings <- table(d.rz2$matchID) == 5
 fiveawings_ids <- as.integer(names(fiveawings[fiveawings==1]))
-length(unique(d.rz2[d.rz2[,"matchID"]%in%fiveawings_ids, "player"])) #14 players
+length(unique(d.rz2[d.rz2[,"matchID"]%in%fiveawings_ids, "player"])) #21 players
 d.5rz2 <- d.complete[d.complete[,"matchID"]%in%fiveawings_ids,]
-rm(ls = fiveawings, fiveawings_ids, d.rz2, d.5rz2)
+
 #do with getPerSquad
 cond <- d.complete[,"ship"]=="rz2awing"
 table(getPerSquad(d.5rz2, "ship", condition = cond)[,3])
-rm(ls = cond)
+rm(ls = cond, fiveawings, fiveawings_ids, d.rz2, d.5rz2)
 #--------- Y-wing Analysis -----
 d.ywing <- d.complete[d.complete[,"ship"]=="btla4ywingREBEL",] #279 ships
 length(unique(d.ywing$player)) #129 players
@@ -1379,8 +1233,8 @@ d.rebelbeef <- d.complete[d.complete[,"faction"]=="rebelalliance",]
 table(getDetails(d.rebelbeef)[2])
 beefdetails <- getDetails(d.rebelbeef)
 beefID <- beefdetails[beefdetails[,"squadsize"]>3,"matchID"]
-dropBeefID <- c(29, 41, 42, 56, 133, 153)
-beefID <- beefID[!beefID %in% dropBeefID]
+#dropBeefID <- c(29, 41, 42, 56, 133, 153)
+#beefID <- beefID[!beefID %in% dropBeefID]
 d.rebelbeef <- d.rebelbeef[d.rebelbeef[,"matchID"]%in%beefID,]
 archetypeBeef <- getArchetypeList(d.rebelbeef)
 leiaID <- d.rebelbeef[d.rebelbeef$crew1=="leiaorgana" |d.rebelbeef$crew2=="leiaorgana" , "matchID"]
@@ -1403,6 +1257,7 @@ length(unique(d.secondary[,"matchID"]))
 d.ani <- d.complete[d.complete[,"faction"]=="galacticrepublic",]
 aniID <- d.ani[d.ani[,"pilot"]=="anakinskywalker","matchID"]
 d.ani <- d.ani[d.ani[,"matchID"]%in%aniID, ]
+archetypeAni <- getArchetypeList(d.ani)
 #Output -----
 
 faction_plot_swiss
