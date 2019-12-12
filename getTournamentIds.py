@@ -22,7 +22,7 @@ import shutil
 import glob
 
 #set working directory. Different for mac and pc?
-os.chdir("//pasteur/SysBC-Home/riselin/Documents/polybox/privat/xwing/Turniere_2.0")
+os.chdir(r"C:\Users\iseli\OneDrive\Desktop\Xwing\analysis")
 
 ttype = int(input("Select the type of tournament (2 for Nationals, 3 for Trials, 5 for SOS, 6 for Worlds): "))
 ftype = int(input("Select the format (1 for Extended, 34 for Hyperspace): "))
