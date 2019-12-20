@@ -4,142 +4,131 @@ Created on Thu Dec 12 12:54:24 2019
 
 @author: riselin
 """
+#from __future__ import print_function
 
 import os
 import json
-import pandas as pd
+#import pandas as pd
 #import requests
-#import datetime
+import datetime
 #import shutil
 #import glob
+from collections import namedtuple
+from nested_lookup import nested_lookup
 
 
 os.chdir("//pasteur/SysBC-Home/riselin/Documents/polybox/privat/xwing/Turniere_2.0/Wave5/")
 
-class Tournamentdata(object):
+
+
+
+class TournamentList:
     num_of_tournaments = 0
+    tournament = None
     
-    def __init__(self):
-        self
+    def __init__(self, data):
+        self.tournament = data
+    
+
+
+class TournamentInstance:
+        tournDate = datetime.date(2019,1,1)
+    
+#        for ids in TournamentList.tournament:
+#            tournid = TournamentList.tournament['id']
+#            tournstring = str(TournamentList.tournament['date']) + str(TournamentList.tournament['state']) + str(TournamentList.tournament['country'])
+#            
+        def __init__(self, data):
+            self.tournament = data
+            self.country = data['country']
+            self.date = data['date']
+            self.state = data['state']
+            TournamentList.num_of_tournaments += 1
+            
+        def clean_data(self,remove_key):
+            for key in remove_key:
+                del self.data[key]
         
-        Tournamentdata.num_of_tournaments += 1
-
-
-
-def clean_pilot_xws(pilot_xws):
-    if pilot_xws == "niennumb-t70xwing":
-        pilot_xws = "niennunb"
-    elif pilot_xws == "oddballarc170":
-        pilot_xws = "oddball-arc170starfighter"
-    elif pilot_xws == "ricolie-nabooroyaln1starfighter":
-        pilot_xws = "ricolie"
-    elif pilot_xws == "anakinskywalkerywing":
-        pilot_xws = "anakinskywalker-btlbywing"
-    return pilot_xws
-
-def clean_upgrade_xws(upgrade_xws):
-    if upgrade_xws == "hardpointcannon":
-        upgrade_xws = "skip"
-    elif upgrade_xws == "hardpointmissile":
-        upgrade_xws = "skip"
-    elif upgrade_xws == "hardpointtorpedo":
-        upgrade_xws = "skip"
-    elif upgrade_xws == "reysmilleniumfalcon":
-        upgrade_xws = "reysmillenniumfalcon"
-    elif upgrade_xws == "rey":
-        upgrade_xws = "rey-gunner"
-    elif upgrade_xws == "chewbaccaresistance":
-        upgrade_xws = "chewbacca-crew-swz19"
-    elif upgrade_xws == "leiaorganaresistance":
-        upgrade_xws = "leiaorgana-resistance"
-    return upgrade_xws
+        @classmethod
+        def set_date(cls, newDate):
+            #will change a variable of TournamentInstance
+            cls.tournDate = newDate
+            return cls.tournDate
+        
+        @staticmethod
+        def notaccessinginstancehere(variable):
+            pass
+        
+        class ParticipantList:
+            pass
 
 
 
 with open("merged_file.json", "r") as read_file:
     tourn_rawdata = json.load(read_file)
-    manual_curation = [5,8,9,47]
-    for entry in manual_curation:
-        del tourn_rawdata[entry]
+#    manual_curation = [5,7,8,47]
+#    for entry in manual_curation:
+#        del tourn_rawdata[entry]
 
-#eval turns the last bit into a dict, and that allows json.load to unpack it.
-eval(tourn_rawdata[0]["participants"][0]["list_json"])
+#or read out the tournament IDs and use them with zip to combine two lists into one dict!
 
-#tourn_rawdata[0]["participants"][0]["list_json"] contains the list.
-parsed_playerdata = json.loads(tourn_rawdata[0]["participants"][0]["list_json"])
-#loading that anew provides a dict with 5 entries, one of them the faction, another one the pilots, and one the points
-#size of len(parsed_squad["pilots"]) gives the number of ships in a list
+def list2dict(data, identifier = 'id', adjust = False):
+    used_ids = nested_lookup(identifier, data)
+    if adjust:
+        used_ids = [ids for ids in used_ids if ids < 1411] #This has to be adjusted manually
+    used_ids = ["id" + str(s) for s in used_ids]
+    data = dict(zip(used_ids, data))
+    return data
 
-#tourn_rawdata[0]["round"] is often empty. If it is empty, take the swiss first ranked as maximum.
-if not tourn_rawdata[0]["rounds"]:
-    print("whoops, no rounds entered")
+def list2dictRounds(data):
+    used_ids =  [str(nested_lookup('roundtype_id',data)[i]) + '_' + 
+             str(nested_lookup('round_number', data)[i]) 
+             for i in range(0, len(data))]
+    data = dict(zip(used_ids, data))
+    return data
 
-#assign points one level up
-tourn_rawdata[0]["participants"][0]["list_points"] = json.loads(tourn_rawdata[0]["participants"][0]["list_json"])["points"]
-d_raw = pd.DataFrame()
-tourn_id = []
-player = []
-for tournament in range(0, len(tourn_rawdata)):
-    tourn_id.append(tourn_rawdata[tournament]["id"])
-    for players in range(0, len((tourn_rawdata[tournament]["participants"]))):
-        player.append(tourn_rawdata[tournament]["participants"][players]["name"])
+tourn_rawdata = list2dict(tourn_rawdata, adjust = True)
 
-
-
+for key in list(tourn_rawdata.keys()):
+    tourn_rawdata[key]['participants'] = list2dict(tourn_rawdata[key]['participants'])
+    tourn_rawdata[key]['rounds'] = list2dictRounds(tourn_rawdata[key]['rounds'])
 
 
-parsed_squad = json.loads(parsed_playerdata["pilots"][0])
-datatest = Tournamentdata(tourn_rawdata[0])
+removekey = ['participants', 'rounds'] #to simplify by removing levels
+simpledata = tourn_rawdata[0].copy()
+for key in removekey:
+    del simpledata[key]
 
-def extract_values(obj, key):
-    """Pull all values of specified key from nested JSON."""
-    arr = []
-
-    def extract(obj, arr, key):
-        """Recursively search for values of key in JSON tree."""
-        if isinstance(obj, dict):
-            for k, v in obj.items():
-                if isinstance(v, (dict, list)):
-                    extract(v, arr, key)
-                elif k == key:
-                    arr.append(v)
-        elif isinstance(obj, list):
-            for item in obj:
-                extract(item, arr, key)
-        return arr
-
-    results = extract(obj, arr, key)
-    return results
-
-len(extract_values(tourn_rawdata, "name")) #works for several keys on both dict levels, but not on the list as it's text
+dictlist = []
+for key, value in tourn_rawdata[0].items():
+    temp = [key,value]
+    dictlist.append(temp)
 
 
-def flatten_json(nested_json):
-    """
-        Flatten json object with nested keys into a single level.
-        Args:
-            nested_json: A nested json object.
-        Returns:
-            The flattened json object if successful, None otherwise.
-    """
-    out = {}
+#maybe bad idea to go with an object...
+"""
+The idea was to get the data using attributes. For that I converted all lists to dictionaries.
+But maybe I would rather go the other way, and flatten the list of lists?
+"""
+class Struct():
+    """https://stackoverflow.com/a/6993694/9467950"""
+    def __init__(self, data):
+        for name, value in data.items():
+            setattr(self, name, self._wrap(value))
 
-    def flatten(x, name=''):
-        if type(x) is dict:
-            for a in x:
-                flatten(x[a], name + a + '_')
-        elif type(x) is list:
-            i = 0
-            for a in x:
-                flatten(a, name + str(i) + '_')
-                i += 1
+    def _wrap(self, value):
+        if isinstance(value, (tuple, list, set, frozenset)): 
+            return type(value)([self._wrap(v) for v in value])
         else:
-            out[name[:-1]] = x
+            return Struct(value) if isinstance(value, dict) else value
 
-    flatten(nested_json)
-    return out
+datacopy = Struct(tourn_rawdata.copy())
+print(datacopy.id1064.date)
+print(datacopy.id1064.country)
+print(datacopy.id1064.state)
+ids = list(datacopy.id1064.participants.__dict__)[0]
+datacopy.id1064.participants.eval(ids)
 
-flat1 = flatten_json(parsed_playerdata)
+TournamentInstance(simpledata)
+simpledata["country"]
 
-dat_participant = tourn_rawdata[0]["participants"][0]
-flat2 = flatten_json(dat_participant)
